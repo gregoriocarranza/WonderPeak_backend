@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: Social_web_V1
+  description: ''
+  version: 1.0.0
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: "Auth"
+    description: "Operaciones relacionadas con la autenticación"
+  - name: "User"
+    description: "Operaciones relacionadas con usuarios"
+    
+paths:
+  /auth/login:
+    post:
+      tags:
+        - "Auth"
+      summary: "Login de usuario"
+      description: "Autentica al usuario y devuelve un token JWT."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "example@example.com"
+                password:
+                  type: string
+                  example: "securePassword123"
+      responses:
+        '200':
+          description: "Exitoso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlY0Yk5Z..."
+                      tokenType:
+                        type: string
+                        example: "Bearer"
+                      expiresIn:
+                        type: integer
+                        example: 86400
+                      refreshToken:
+                        type: string
+                        example: "0NQhW4LTEg3zWTmj8-FL9TR9Q8j-ZphK-PnKRJyQt0bbX"
+        '401':
+          description: "No autorizado"
+
+  /auth/register:
+    post:
+      tags:
+        - "Auth"
+      summary: "Registro de usuario"
+      description: "Registra un nuevo usuario."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "example@example.com"
+                firstname:
+                  type: string
+                  example: "John"
+                lastname:
+                  type: string
+                  example: "Doe"
+                password:
+                  type: string
+                  example: "securePassword123"
+      responses:
+        '201':
+          description: "Usuario registrado"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully."
+        '400':
+          description: "Solicitud inválida"
+
+  /auth/logout:
+    post:
+      tags:
+        - "Auth"
+      summary: "Logout de usuario"
+      description: "Cierra la sesión del usuario."
+      responses:
+        '200':
+          description: "Sesión cerrada"
+        '401':
+          description: "No autorizado"
+
+  /user/jwt:
+    get:
+      tags:
+        - "User"
+      summary: "Obtener usuario por JWT"
+      description: "Devuelve la información del usuario asociado al JWT."
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Información del usuario"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  firstname:
+                    type: string
+                  lastname:
+                    type: string
+        '401':
+          description: "No autorizado"
+
+  /user/{uuid}:
+    get:
+      tags:
+        - "User"
+      summary: "Obtener usuario por UUID"
+      description: "Devuelve la información del usuario por su UUID."
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "66a3e747-2065-49ed-bb62-50ac084742bf"
+      responses:
+        '200':
+          description: "Información del usuario"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  firstname:
+                    type: string
+                  lastname:
+                    type: string
+        '404':
+          description: "Usuario no encontrado"
+        '401':
+          description: "No autorizado"
