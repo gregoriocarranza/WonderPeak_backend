@@ -7,7 +7,9 @@ info:
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
+    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0/api
+  - description: SwaggerHub API Auto Mocking V2
+    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V2/2.0.0/api
 
 components:
   securitySchemes:
@@ -24,6 +26,8 @@ tags:
     description: "Operaciones relacionadas con la autenticación"
   - name: "User"
     description: "Operaciones relacionadas con usuarios"
+  - name: "Posteos"
+    description: "Operaciones relacionadas con los posteos"
     
 paths:
   /auth/login:
@@ -180,3 +184,38 @@ paths:
           description: "Usuario no encontrado"
         '401':
           description: "No autorizado"
+
+
+
+
+# ------------------------------Schemas------------------------------
+
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlY0Yk5Z..."
+            tokenType:
+              type: string
+              example: "Bearer"
+            expiresIn:
+              type: integer
+              example: 86400
+            refreshToken:
+              type: string
+              example: "0NQhW4LTEg3zWTmj8-FL9TR9Q8j-ZphK-PnKRJyQt0bbX"
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User registered successfully."
