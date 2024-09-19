@@ -41,19 +41,102 @@ components:
             nickname: 'johndoe123'
             biografía: 'Desarrollador apasionado de la tecnología.'
 
-    FeedEntity:
+    UserData:
       type: object
       properties:
+        userUuid:
+          type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+        nombre:
+          type: string
+          example: 'John'
+        apellido:
+          type: string
+          example: 'Doe'
+        nickname:
+          type: string
+          example: 'johndoe123'
+        biografía:
+          type: string
+          example: 'Desarrollador apasionado de la tecnología.'
+        seguidores:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUserData'
+        seguidos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUserData'
+        nivel:
+          type: integer
+          example: 10
         posts:
           type: array
           items:
             $ref: '#/components/schemas/Post'
+
+    ShortUserData:
+      type: object
+      properties:
+        userUuid:
+          type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+        nombre:
+          type: string
+          example: 'John'
+        apellido:
+          type: string
+          example: 'Doe'
+        nickname:
+          type: string
+          example: 'johndoe123'
+        profileUserImage:
+          type: string
+          example: 'https://example.com/images/perfil.jpg'
+          description: 'URL de la imagen de perfil del usuario.'
+        nivel:
+          type: integer
+          example: 10
+
+    FeedEntity:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 'Indica si la operación fue exitosa'
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+          description: 'Array de posts dentro del feed'
+        page:
+          type: integer
+          example: 1
+          description: 'Número de página actual'
+        limit:
+          type: integer
+          example: 10
+          description: 'Número de posts por página'
+        count:
+          type: integer
+          example: 10
+          description: 'Número de posts devueltos en la página actual'
+        totalCount:
+          type: integer
+          example: 50
+          description: 'Número total de posts disponibles'
+        totalPages:
+          type: integer
+          example: 5
+          description: 'Número total de páginas disponibles'
+
     Post:
       type: object
       properties:
-        postId:
-          type: integer
-          example: 123
+        postUuid:
+          type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
         title:
           type: string
           example: 'Aventuras en la naturaleza'
@@ -754,7 +837,7 @@ paths:
     post:
       tags:
         - 'Following/Followers'
-      summary: 'Seguir a un usuario'
+      summary: 'Agregar o quitar follow a un usuario'
       description: 'Agrega a un usuario a la lista de seguidos.'
       parameters:
         - name: userUuid
@@ -775,56 +858,6 @@ paths:
                   value:
                     success: true
                     message: 'Usuario seguido exitosamente'
-        '404':
-          description: 'Usuario no encontrado'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Usuario no encontrado'
-                    timestamp: 1633017600
-        '401':
-          description: 'No autorizado'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
-    delete:
-      tags:
-        - 'Following/Followers'
-      summary: 'Dejar de seguir a un usuario'
-      description: 'Elimina a un usuario de la lista de seguidos.'
-      parameters:
-        - name: userUuid
-          in: path
-          required: true
-          schema:
-            type: string
-          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-      responses:
-        '200':
-          description: 'Usuario eliminado de seguidos exitosamente'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Usuario eliminado de seguidos exitosamente'
         '404':
           description: 'Usuario no encontrado'
           content:
@@ -937,14 +970,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Feed obtenido exitosamente'
-                    data:
-                      $ref: '#/components/schemas/FeedEntity'
+                $ref: '#/components/schemas/FeedEntity'
         '401':
           description: 'No autorizado'
           content:
@@ -987,7 +1013,13 @@ paths:
                     success: true
                     message: 'Posteo obtenido exitosamente'
                     data:
-                      $ref: '#/components/schemas/Post'
+                      postUuid: 123
+                      title: 'Aventuras en la naturaleza'
+                      text: '¡Explorando los vastos bosques!'
+                      multimediaUrl: 'https://example.com/image.jpg'
+                      commentsCount: 5
+                      likesCount: 120
+                      creationDate: '2021-07-16T19:20:30Z'
         '404':
           description: 'Posteo no encontrado'
           content:
@@ -1021,16 +1053,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Post'
-            example:
-              title: 'Aventuras en la naturaleza'
-              text: '¡Explorando los vastos bosques!'
-              multimediaUrl: 'https://example.com/image.jpg'
-              commentsCount: 5
-              likesCount: 120
-              creationDate: '2021-07-16T19:20:30Z'
       responses:
         '200':
-          description: 'Post actualizado exitosamente'
+          description: 'Posteo obtenido exitosamente'
           content:
             application/json:
               schema:
@@ -1039,9 +1064,15 @@ paths:
                 SuccessfulResponse:
                   value:
                     success: true
-                    message: 'Post actualizado exitosamente'
+                    message: 'Posteo obtenido exitosamente'
                     data:
-                      $ref: '#/components/schemas/Post'
+                      postUuid: 123
+                      title: 'Aventuras en la naturaleza'
+                      text: '¡Explorando los vastos bosques!'
+                      multimediaUrl: 'https://example.com/image.jpg'
+                      commentsCount: 5
+                      likesCount: 120
+                      creationDate: '2021-07-16T19:20:30Z'
         '404':
           description: 'Post no encontrado'
           content:
