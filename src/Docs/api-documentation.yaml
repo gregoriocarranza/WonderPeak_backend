@@ -335,7 +335,7 @@ components:
         - code
         - message
         - timestamp
-        
+
 tags:
   - name: 'Auth'
     description: 'Operations related to authentication'
@@ -523,6 +523,83 @@ paths:
 
   #------------------------ User Routes ------------------------#
 
+  /user:
+    get:
+      tags:
+        - 'User'
+      summary: 'Search for users by name, last name, or nickname'
+      description: 'Allows searching for users in the system by their name, last name, or nickname. Supports pagination for large result sets.'
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 'Paul'
+        - name: lastName
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 'Sundays'
+        - name: nickname
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 'Paul_Sundays69'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for user pagination.'
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Number of users to retrieve per page.'
+      responses:
+        '200':
+          description: 'User information retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'User found successfully'
+                  data:
+                    $ref: '#/components/schemas/ShortUserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+              examples:
+                NotFoundExample:
+                  value:
+                    success: false
+                    code: 404
+                    message: 'User not found'
+                    timestamp: 1633017600
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
   /user/me:
     get:
       tags:
@@ -702,56 +779,6 @@ paths:
                 $ref: '#/components/schemas/NotFound-404'
           description: Usuario no encontrado
       summary: Eliminar usuario por UUID
-  /user/search:
-    get:
-      tags:
-        - 'User'
-      summary: 'Buscar a un usuario por nickname'
-      description: 'Busca a un usuario en el sistema mediante su nickname.'
-      parameters:
-        - name: nickname
-          in: query
-          required: true
-          schema:
-            type: string
-          example: 'johndoe123'
-      responses:
-        '200':
-          description: 'Información del usuario obtenida exitosamente'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: 'Usuario encontrado exitosamente'
-                  data:
-                    $ref: '#/components/schemas/ShortUserData'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '404':
-          description: 'Usuario no encontrado'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound-404'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Usuario no encontrado'
-                    timestamp: 1633017600
-        '401':
-          description: 'No autorizado'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /user/{userUuid}/followers:
     get:
