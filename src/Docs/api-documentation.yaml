@@ -7,7 +7,7 @@ info:
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0/api
+    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
   - description: SwaggerHub API Auto Mocking V2
     url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V2/2.0.0/api
 
@@ -856,7 +856,7 @@ paths:
                     code: 401
                     message: 'No autorizado'
                     timestamp: 1633017600
-    post:
+    put:
       tags:
         - 'Following/Followers'
       summary: 'Agregar o quitar follow a un usuario'
@@ -966,7 +966,7 @@ paths:
                     code: 401
                     message: 'No autorizado'
                     timestamp: 1633017600
-    post:
+    put:
       tags:
         - 'Following/Followers'
       summary: 'Agregar o eliminar a un usuario de favoritos'
