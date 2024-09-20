@@ -8,8 +8,6 @@ servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
-  - description: SwaggerHub API Auto Mocking V2
-    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V2/2.0.0/api
 
 components:
   securitySchemes:
@@ -155,6 +153,33 @@ components:
           type: integer
           example: 1643673599
           description: 'End date of the ad display in Unix timestamp.'
+    Comment:
+      type: object
+      properties:
+        commentUuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the comment.
+        userUuid:
+          type: string
+          format: uuid
+          description: Unique identifier of the user who made the comment.
+        postUuid:
+          type: string
+          format: uuid
+          description: Unique identifier of the post to which the comment belongs.
+        text:
+          type: string
+          description: Text of the comment.
+        date:
+          type: string
+          format: date-time
+          description: Date and time the comment was made.
+      # required:
+      #   - userUuid
+      #   - postUuid
+      #   - text
+      #   - date
 
     Pagination:
       type: object
@@ -179,8 +204,14 @@ components:
           type: integer
           example: 5
           description: 'Total number of pages available'
+      required:
+        - page
+        - limit
+        - count
+        - totalCount
+        - totalPages
 
-    ErrorResponse:
+    NotFound-404:
       type: object
       properties:
         success:
@@ -188,20 +219,123 @@ components:
           example: false
         code:
           type: integer
-          description: HTTP error code or custom code
+          description: 'Error code refered in our sistem'
+          example: 40401
+        message:
+          type: string
+          description: 'Description of the validation error'
+          example: 'Invalid input data'
+        timestamp:
+          type: integer
+          description: 'Unix timestamp of when the error occurred'
+          example: 1633017600
+      required:
+        - code
+        - message
+        - example
+        - timestamp
+
+    ValidationError-400:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          description: 'HTTP error code'
           example: 400
         message:
           type: string
-          description: Error description
-          example: 'Bad Request'
+          description: 'Description of the validation error'
+          example: 'Invalid input data'
+        errors:
+          type: object
+          description: 'Detailed validation errors for specific fields'
+          additionalProperties:
+            type: string
+          example:
+            title: 'Title is required'
+            text: 'Text must be at least 10 characters long'
         timestamp:
           type: integer
-          description: Unix timestamp format
+          description: 'Unix timestamp of when the error occurred'
           example: 1633017600
+      required:
+        - code
+        - message
+        - errors
+        - timestamp
 
-security:
-  - bearerAuth: []
+    UnauthorizedError-401:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          description: 'HTTP error code'
+          example: 401
+        message:
+          type: string
+          description: 'Error description indicating lack of authorization'
+          example: 'Unauthorized'
+        timestamp:
+          type: integer
+          description: 'Unix timestamp of when the error occurred'
+          example: 1633017600
+      required:
+        - code
+        - message
+        - timestamp
 
+    ForbiddenError-403:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          description: 'HTTP error code'
+          example: 403
+        message:
+          type: string
+          description: 'Error indicating the user does not have permission'
+          example: 'User does not have permission to create a post'
+        timestamp:
+          type: integer
+          description: 'Unix timestamp of when the error occurred'
+          example: 1633017600
+      required:
+        - code
+        - message
+        - timestamp
+
+    InternalServerError-500:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: integer
+          description: 'HTTP error code'
+          example: 500
+        message:
+          type: string
+          description: 'Generic server error message'
+          example: 'An unexpected error occurred on the server'
+        timestamp:
+          type: integer
+          description: 'Unix timestamp of when the error occurred'
+          example: 1633017600
+      required:
+        - code
+        - message
+        - timestamp
+        
 tags:
   - name: 'Auth'
     description: 'Operations related to authentication'
@@ -211,6 +345,8 @@ tags:
     description: 'Operations related to Followers/Following'
   - name: 'Posts'
     description: 'Operations related to posts'
+  - name: 'Comments'
+    description: 'Operations related to Comments'
 
 paths:
   #------------------------ Auth Routes ------------------------#
@@ -245,27 +381,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Resource not found'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/NotFound-404'
         '401':
           description: 'Unauthorized'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'Unauthorized'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /auth/register:
     post:
@@ -304,28 +426,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InternalServerErrorExample:
-                  value:
-                    success: false
-                    code: 500
-                    message: 'Internal server error'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/InternalServerError-500'
         '400':
           description: 'Bad request'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                BadRequestExample:
-                  value:
-                    success: false
-                    code: 400
-                    message: 'Bad request'
-                    timestamp: 1633017600
-
+                $ref: '#/components/schemas/ValidationError-400'
   /auth/logout:
     post:
       tags:
@@ -340,14 +447,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'Unauthorized'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /auth/forgot_password:
     post:
@@ -377,27 +477,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Resource not found'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/NotFound-404'
         '400':
           description: 'Error in the provided email'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 400
-                    message: 'Unauthorized'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/ValidationError-400'
 
   /auth/reset_password:
     post:
@@ -427,31 +513,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Resource not found'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/NotFound-404'
         '401':
           description: 'Unauthorized'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'Unauthorized'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   #------------------------ User Routes ------------------------#
 
-  /user/jwt:
+  /user/me:
     get:
       tags:
         - 'User'
@@ -480,14 +552,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /user/{userUuid}:
     get:
@@ -523,27 +588,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
         '404':
           description: 'Recurso no encontrado'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Recurso no encontrado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/NotFound-404'
     put:
       tags:
         - 'User'
@@ -603,32 +655,53 @@ paths:
                   data:
                     $ref: '#/components/schemas/UserData'
         '400':
-          description: 'Solicitud inválida'
+          description: 'Bad Request'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                BadRequestExample:
-                  value:
-                    success: false
-                    code: 400
-                    message: 'Solicitud inválida'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/ValidationError-400'
         '401':
           description: 'No autorizado'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/UnauthorizedError-401'
+    delete:
+      tags:
+        - User
+      description: Elimina el usuario identificado por UUID.
+      parameters:
+        - example: 66a3e747-2065-49ed-bb62-50ac084742bf
+          in: path
+          name: userUuid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
               examples:
-                UnauthorizedExample:
+                SuccessfulResponse:
                   value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
-
+                    message: Usuario eliminado exitosamente
+                    success: true
+              schema:
+                $ref: '#/components/schemas/GeneralResponse'
+          description: Usuario eliminado exitosamente
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+          description: No autorizado
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+          description: Usuario no encontrado
+      summary: Eliminar usuario por UUID
   /user/search:
     get:
       tags:
@@ -665,7 +738,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -678,14 +751,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /user/{userUuid}/followers:
     get:
@@ -725,7 +791,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -738,14 +804,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
     delete:
       tags:
         - 'Following/Followers'
@@ -775,7 +835,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -788,14 +848,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /user/{userUuid}/following:
     get:
@@ -835,7 +888,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -848,14 +901,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
     put:
       tags:
         - 'Following/Followers'
@@ -885,7 +932,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -898,14 +945,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /user/{userUuid}/favorites:
     get:
@@ -945,7 +985,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -958,14 +998,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
     put:
       tags:
         - 'Following/Followers'
@@ -999,7 +1033,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
@@ -1012,22 +1046,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
-  #------------------------ posts Routes ------------------------#
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
-  /posts/feed:
+  #------------------------ posts Routes ------------------------#
+  /posts:
     get:
       tags:
         - 'Posts'
-      summary: 'Obtener el feed'
-      description: 'Devuelve una lista paginada de posts para el feed del usuario.'
+      summary: 'Get all posts'
+      description: 'Returns a paginated list of posts.'
       security:
         - bearerAuth: []
       parameters:
@@ -1037,17 +1064,17 @@ paths:
           schema:
             type: integer
             default: 1
-            description: 'Número de página para la paginación del feed.'
+            description: 'Page number for feed pagination.'
         - name: count
           in: query
           required: false
           schema:
             type: integer
             default: 1
-            description: 'Número de página para la paginación del feed.'
+            description: 'Page number for feed pagination.'
       responses:
         '200':
-          description: 'Lista de seguidos obtenida'
+          description: 'Posts list retrieved'
           content:
             application/json:
               schema:
@@ -1058,7 +1085,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Feed obtenido exitosamente'
+                    example: 'Posts retrieved successfully'
                   data:
                     type: array
                     items:
@@ -1066,25 +1093,50 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
+    post:
+      tags:
+        - 'Posts'
+      summary: 'Create a post'
+      description: 'Create a post and returns it.'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'Posts created successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Posts created successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
 
   /posts/{postUuid}:
     get:
       tags:
         - 'Posts'
-      summary: 'Obtener Un posteo'
-      description: 'Devuelve un posteo segun su UUID'
+      summary: 'Get a post'
+      description: 'Returns a post by its UUID'
       parameters:
         - name: postUuid
           in: path
@@ -1096,7 +1148,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: 'Posteo obtenido exitosamente'
+          description: 'Post retrieved successfully'
           content:
             application/json:
               schema:
@@ -1105,33 +1157,33 @@ paths:
                 SuccessfulResponse:
                   value:
                     success: true
-                    message: 'Posteo obtenido exitosamente'
+                    message: 'Post retrieved successfully'
                     data:
                       postUuid: 123
-                      title: 'Aventuras en la naturaleza'
-                      text: '¡Explorando los vastos bosques!'
+                      title: 'Adventures in the wild'
+                      text: 'Exploring the vast forests!'
                       multimediaUrl: 'https://example.com/image.jpg'
                       commentsCount: 5
                       likesCount: 120
                       creationDate: '2021-07-16T19:20:30Z'
         '404':
-          description: 'Posteo no encontrado'
+          description: 'Post not found'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
                     success: false
                     code: 404
-                    message: 'Posteo no encontrado'
+                    message: 'Post not found'
                     timestamp: 1633017600
     put:
       tags:
         - 'Posts'
-      summary: 'Actualizar un post'
-      description: 'Permite al usuario actualizar un post existente.'
+      summary: 'Update a post'
+      description: 'Allows the user to update an existing post.'
       security:
         - bearerAuth: []
       parameters:
@@ -1149,7 +1201,7 @@ paths:
               $ref: '#/components/schemas/Post'
       responses:
         '200':
-          description: 'Posteo obtenido exitosamente'
+          description: 'Post updated successfully'
           content:
             application/json:
               schema:
@@ -1158,46 +1210,40 @@ paths:
                 SuccessfulResponse:
                   value:
                     success: true
-                    message: 'Posteo obtenido exitosamente'
+                    message: 'Post updated successfully'
                     data:
                       postUuid: 123
-                      title: 'Aventuras en la naturaleza'
-                      text: '¡Explorando los vastos bosques!'
+                      title: 'Adventures in the wild'
+                      text: 'Exploring the vast forests!'
                       multimediaUrl: 'https://example.com/image.jpg'
                       commentsCount: 5
                       likesCount: 120
                       creationDate: '2021-07-16T19:20:30Z'
         '404':
-          description: 'Post no encontrado'
+          description: 'Post not found'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotFound-404'
               examples:
                 NotFoundExample:
                   value:
                     success: false
                     code: 404
-                    message: 'Post no encontrado'
+                    message: 'Post not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
     delete:
       tags:
         - 'Posts'
-      summary: 'Eliminar un post'
-      description: 'Permite al usuario eliminar un post existente.'
+      summary: 'Delete a post'
+      description: 'Allows the user to delete an existing post.'
       security:
         - bearerAuth: []
       parameters:
@@ -1209,7 +1255,7 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Post eliminado exitosamente'
+          description: 'Post deleted successfully'
           content:
             application/json:
               schema:
@@ -1218,30 +1264,307 @@ paths:
                 SuccessfulResponse:
                   value:
                     success: true
-                    message: 'Post eliminado exitosamente'
+                    message: 'Post deleted successfully'
         '404':
-          description: 'Post no encontrado'
+          description: 'Post not found'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                NotFoundExample:
-                  value:
-                    success: false
-                    code: 404
-                    message: 'Post no encontrado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/NotFound-404'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                UnauthorizedExample:
-                  value:
-                    success: false
-                    code: 401
-                    message: 'No autorizado'
-                    timestamp: 1633017600
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
+  /posts/feed:
+    get:
+      tags:
+        - 'Posts'
+      summary: 'Get the feed'
+      description: 'Returns a paginated list of posts for the user’s feed.'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for feed pagination.'
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for feed pagination.'
+      responses:
+        '200':
+          description: 'Feed list retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Feed retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
+  #------------------------ comments Routes ------------------------#
+
+  /comments/{postUuid}:
+    get:
+      tags:
+        - 'Comments'
+      summary: 'Get all the comments'
+      description: 'Returns a paginated list of comments.'
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: postUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+          description: Unique identifier for the post.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for comments pagination.'
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for comments pagination.'
+      responses:
+        '200':
+          description: 'Post´s comments list retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Post´s comments retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+    post:
+      tags:
+        - 'Comments'
+      summary: Create a new comment.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      parameters:
+        - in: path
+          name: postUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+          description: Unique identifier for the post.
+      responses:
+        '200':
+          description: Comment successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Comment successfully created.'
+                  data:
+                    $ref: '#/components/schemas/Comment'
+
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError-400'
+
+  /comments/{commentUuid}:
+    get:
+      tags:
+        - 'Comments'
+      summary: Retrieve a comment by its ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: commentUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+          description: Unique identifier for the comment.
+      responses:
+        '200':
+          description: 'Comment information successfully retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Comment information successfully retrieved'
+                  data:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: 'Comment not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+
+    put:
+      tags:
+        - 'Comments'
+      summary: Update an existing comment.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: commentUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+          description: Unique identifier for the comment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '200':
+          description: Comment updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Comment information updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Comment'
+        '404':
+          description: 'Comment not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+
+    delete:
+      tags:
+        - 'Comments'
+      summary: Delete a comment.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: commentUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+          description: Unique identifier for the comment.
+      responses:
+        '200':
+          description: Comment deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Comment deleted successfully.'
+        '404':
+          description: 'Comment not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
