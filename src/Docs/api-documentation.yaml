@@ -26,20 +26,15 @@ components:
       properties:
         success:
           type: boolean
-          description: Indica si la operación fue exitosa
+          description: Indicates whether the operation was successful
           example: true
         message:
           type: string
-          description: Mensaje descriptivo de la respuesta
-          example: 'Correo enviado exitosamente'
+          description: Descriptive message of the response
+          example: 'Email sent successfully'
         data:
           type: object
-          description: Objeto de la respuesta (si existiera) o null
-          example:
-            nombre: 'John'
-            apellido: 'Doe'
-            nickname: 'johndoe123'
-            biografía: 'Desarrollador apasionado de la tecnología.'
+          description: Response object (if any) or null
 
     UserData:
       type: object
@@ -47,27 +42,27 @@ components:
         userUuid:
           type: string
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-        nombre:
+        firstName:
           type: string
           example: 'John'
-        apellido:
+        lastName:
           type: string
           example: 'Doe'
         nickname:
           type: string
           example: 'johndoe123'
-        biografía:
+        bio:
           type: string
-          example: 'Desarrollador apasionado de la tecnología.'
-        seguidores:
+          example: 'Passionate technology developer.'
+        followers:
           type: array
           items:
             $ref: '#/components/schemas/ShortUserData'
-        seguidos:
+        following:
           type: array
           items:
             $ref: '#/components/schemas/ShortUserData'
-        nivel:
+        level:
           type: integer
           example: 10
         posts:
@@ -81,10 +76,10 @@ components:
         userUuid:
           type: string
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-        nombre:
+        firstName:
           type: string
           example: 'John'
-        apellido:
+        lastName:
           type: string
           example: 'Doe'
         nickname:
@@ -92,44 +87,11 @@ components:
           example: 'johndoe123'
         profileUserImage:
           type: string
-          example: 'https://example.com/images/perfil.jpg'
-          description: 'URL de la imagen de perfil del usuario.'
-        nivel:
+          example: 'https://example.com/images/profile.jpg'
+          description: 'URL of the user´s profile image.'
+        level:
           type: integer
           example: 10
-
-    FeedEntity:
-      type: object
-      properties:
-        success:
-          type: boolean
-          description: 'Indica si la operación fue exitosa'
-          example: true
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Post'
-          description: 'Array de posts dentro del feed'
-        page:
-          type: integer
-          example: 1
-          description: 'Número de página actual'
-        limit:
-          type: integer
-          example: 10
-          description: 'Número de posts por página'
-        count:
-          type: integer
-          example: 10
-          description: 'Número de posts devueltos en la página actual'
-        totalCount:
-          type: integer
-          example: 50
-          description: 'Número total de posts disponibles'
-        totalPages:
-          type: integer
-          example: 5
-          description: 'Número total de páginas disponibles'
 
     Post:
       type: object
@@ -139,10 +101,10 @@ components:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
         title:
           type: string
-          example: 'Aventuras en la naturaleza'
+          example: 'Nature Adventures'
         text:
           type: string
-          example: '¡Explorando los vastos bosques!'
+          example: 'Exploring the vast forests!'
         multimediaUrl:
           type: string
           example: 'https://example.com/image.jpg'
@@ -157,6 +119,67 @@ components:
           format: date-time
           example: '2021-07-16T19:20:30Z'
 
+    Ad:
+      type: object
+      properties:
+        adUuid:
+          type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+        ownerUser:
+          $ref: '#/components/schemas/ShortUserData'
+        companyName:
+          type: string
+          example: 'Adventure Works'
+          description: 'Name of the company.'
+        companyUrl:
+          type: string
+          example: 'https://adventure-works.com'
+          description: 'Website URL of the company.'
+        image:
+          type: string
+          example: 'https://example.com/image.jpg'
+          description: 'URL of the ad image.'
+        likesCount:
+          type: integer
+          example: 120
+          description: 'Number of likes the ad has received.'
+        commentsCount:
+          type: integer
+          example: 30
+          description: 'Number of comments on the ad.'
+        startDate:
+          type: integer
+          example: 1640995200
+          description: 'Start date of the ad display in Unix timestamp.'
+        endDate:
+          type: integer
+          example: 1643673599
+          description: 'End date of the ad display in Unix timestamp.'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: 'Current page number'
+        limit:
+          type: integer
+          example: 10
+          description: 'Number of posts per page'
+        count:
+          type: integer
+          example: 10
+          description: 'Number of posts returned on the current page'
+        totalCount:
+          type: integer
+          example: 50
+          description: 'Total number of posts available'
+        totalPages:
+          type: integer
+          example: 5
+          description: 'Total number of pages available'
+
     ErrorResponse:
       type: object
       properties:
@@ -165,15 +188,15 @@ components:
           example: false
         code:
           type: integer
-          description: Código de error HTTP o personalizado
+          description: HTTP error code or custom code
           example: 400
         message:
           type: string
-          description: Descripción del error
-          example: 'Solicitud incorrecta'
+          description: Error description
+          example: 'Bad Request'
         timestamp:
           type: integer
-          description: Marca de tiempo en formato Unix
+          description: Unix timestamp format
           example: 1633017600
 
 security:
@@ -181,23 +204,22 @@ security:
 
 tags:
   - name: 'Auth'
-    description: 'Operaciones relacionadas con la autenticación'
+    description: 'Operations related to authentication'
   - name: 'User'
-    description: 'Operaciones relacionadas con usuarios'
+    description: 'Operations related to users'
   - name: 'Following/Followers'
-    description: 'Operaciones relacionadas con Seguidores/Seguidos'
+    description: 'Operations related to Followers/Following'
   - name: 'Posts'
-    description: 'Operaciones relacionadas con los posteos'
+    description: 'Operations related to posts'
 
 paths:
   #------------------------ Auth Routes ------------------------#
-
   /auth/login:
     post:
       tags:
         - 'Auth'
-      summary: 'Login de usuario'
-      description: 'Autentica al usuario y devuelve un token JWT.'
+      summary: 'User login'
+      description: 'Authenticates the user and returns a JWT.'
       requestBody:
         required: true
         content:
@@ -213,13 +235,13 @@ paths:
                   example: 'securePassword123'
       responses:
         '200':
-          description: 'Exitoso'
+          description: 'Successful'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
         '404':
-          description: 'Recurso no encontrado'
+          description: 'Resource not found'
           content:
             application/json:
               schema:
@@ -229,10 +251,10 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Recurso no encontrado'
+                    message: 'Resource not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
@@ -242,15 +264,15 @@ paths:
                   value:
                     success: false
                     code: 401
-                    message: 'No autorizado'
+                    message: 'Unauthorized'
                     timestamp: 1633017600
 
   /auth/register:
     post:
       tags:
         - 'Auth'
-      summary: 'Registro de usuario'
-      description: 'Registra un nuevo usuario.'
+      summary: 'User registration'
+      description: 'Registers a new user.'
       requestBody:
         required: true
         content:
@@ -272,13 +294,13 @@ paths:
                   example: 'securePassword123'
       responses:
         '201':
-          description: 'Exitoso'
+          description: 'Successful'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
         '500':
-          description: 'Error interno del servidor'
+          description: 'Internal server error'
           content:
             application/json:
               schema:
@@ -288,11 +310,10 @@ paths:
                   value:
                     success: false
                     code: 500
-                    message: 'Error interno del servidor'
+                    message: 'Internal server error'
                     timestamp: 1633017600
-
         '400':
-          description: 'Solicitud incorrecta'
+          description: 'Bad request'
           content:
             application/json:
               schema:
@@ -302,20 +323,20 @@ paths:
                   value:
                     success: false
                     code: 400
-                    message: 'Solicitud incorrecta'
+                    message: 'Bad request'
                     timestamp: 1633017600
 
   /auth/logout:
     post:
       tags:
         - 'Auth'
-      summary: 'Logout de usuario'
-      description: 'Cierra la sesión del usuario.'
+      summary: 'User logout'
+      description: 'Logs out the user.'
       responses:
         '200':
-          description: 'Sesión cerrada'
+          description: 'Session closed'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
@@ -325,14 +346,15 @@ paths:
                   value:
                     success: false
                     code: 401
-                    message: 'No autorizado'
+                    message: 'Unauthorized'
                     timestamp: 1633017600
+
   /auth/forgot_password:
     post:
       tags:
         - 'Auth'
-      summary: Enviar correo de restablecimiento de contraseña
-      description: Envía un correo para restablecer la contraseña del usuario.
+      summary: 'Send password reset email'
+      description: 'Sends an email to reset the user´s password.'
       requestBody:
         required: true
         content:
@@ -345,13 +367,13 @@ paths:
                   example: 'example@example.com'
       responses:
         '200':
-          description: Correo enviado exitosamente
+          description: 'Email sent successfully'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
         '404':
-          description: 'Recurso no encontrado'
+          description: 'Resource not found'
           content:
             application/json:
               schema:
@@ -361,10 +383,10 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Recurso no encontrado'
+                    message: 'Resource not found'
                     timestamp: 1633017600
         '400':
-          description: Error en el correo proporcionado
+          description: 'Error in the provided email'
           content:
             application/json:
               schema:
@@ -374,15 +396,15 @@ paths:
                   value:
                     success: false
                     code: 400
-                    message: 'No autorizado'
+                    message: 'Unauthorized'
                     timestamp: 1633017600
 
   /auth/reset_password:
     post:
       tags:
         - 'Auth'
-      summary: Restablecer contraseña
-      description: Permite al usuario restablecer su contraseña utilizando un token de restablecimiento.
+      summary: 'Reset password'
+      description: 'Allows the user to reset their password using a reset token.'
       requestBody:
         required: true
         content:
@@ -395,13 +417,13 @@ paths:
                   example: 'newSecurePassword123'
       responses:
         '200':
-          description: Contraseña restablecida exitosamente
+          description: 'Password reset successfully'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
         '404':
-          description: 'Recurso no encontrado'
+          description: 'Resource not found'
           content:
             application/json:
               schema:
@@ -411,10 +433,10 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Recurso no encontrado'
+                    message: 'Resource not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
@@ -424,7 +446,7 @@ paths:
                   value:
                     success: false
                     code: 401
-                    message: 'No autorizado'
+                    message: 'Unauthorized'
                     timestamp: 1633017600
 
   #------------------------ User Routes ------------------------#
@@ -439,25 +461,20 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: 'Información del usuario'
+          description: 'Información del usuario obtenida exitosamente'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Información del usuario obtenida exitosamente'
-                    data:
-                      nombre: 'John'
-                      apellido: 'Doe'
-                      nickname: 'johndoe123'
-                      biografía: 'Desarrollador apasionado de la tecnología.'
-                      seguidores: ['user1', 'user2']
-                      seguidos: ['user3', 'user4']
-                      nivel: 10
-                      posts: ['post1', 'post2']
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Información del usuario obtenida exitosamente'
+                  data:
+                    $ref: '#/components/schemas/UserData'
         '401':
           description: 'No autorizado'
           content:
@@ -487,25 +504,20 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Información del usuario'
+          description: 'Información del usuario obtenida exitosamente'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Información del usuario obtenida exitosamente'
-                    data:
-                      nombre: 'John'
-                      apellido: 'Doe'
-                      nickname: 'johndoe123'
-                      biografía: 'Desarrollador apasionado de la tecnología.'
-                      seguidores: ['user1', 'user2']
-                      seguidos: ['user3', 'user4']
-                      nivel: 10
-                      posts: ['post1', 'post2']
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Información del usuario obtenida exitosamente'
+                  data:
+                    $ref: '#/components/schemas/UserData'
         '401':
           description: 'No autorizado'
           content:
@@ -576,16 +588,20 @@ paths:
                   example: 'https://example.com/portada.jpg'
       responses:
         '200':
-          description: 'Datos del usuario actualizados exitosamente'
+          description: 'Información del usuario obtenida exitosamente'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Datos del usuario actualizados exitosamente'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Datos del usuario actualizados exitosamente'
+                  data:
+                    $ref: '#/components/schemas/UserData'
         '400':
           description: 'Solicitud inválida'
           content:
@@ -628,22 +644,22 @@ paths:
           example: 'johndoe123'
       responses:
         '200':
-          description: 'Usuario encontrado'
+          description: 'Información del usuario obtenida exitosamente'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Usuario encontrado exitosamente'
-                    data:
-                      usuario:
-                        nickname: 'johndoe123'
-                        nombre: 'John'
-                        apellido: 'Doe'
-                        biografía: 'Desarrollador apasionado de la tecnología.'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Usuario encontrado exitosamente'
+                  data:
+                    $ref: '#/components/schemas/ShortUserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '404':
           description: 'Usuario no encontrado'
           content:
@@ -686,21 +702,24 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Lista de seguidores obtenida'
+          description: 'Información del usuario obtenida exitosamente'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Lista de seguidores obtenida exitosamente'
-                    data:
-                      seguidores:
-                        - 'user1'
-                        - 'user2'
-                        - 'user3'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Usuario encontrado exitosamente'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortUserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '404':
           description: 'Usuario no encontrado'
           content:
@@ -797,17 +816,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Lista de seguidos obtenida exitosamente'
-                    data:
-                      seguidos:
-                        - 'user3'
-                        - 'user4'
-                        - 'user5'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Usuario encontrado exitosamente'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortUserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '404':
           description: 'Usuario no encontrado'
           content:
@@ -885,18 +907,76 @@ paths:
                     message: 'No autorizado'
                     timestamp: 1633017600
 
-  /user/favorites/{userUuid}:
-    post:
+  /user/{userUuid}/favorites:
+    get:
       tags:
         - 'Following/Followers'
-      summary: 'Agregar o eliminar a un usuario de favoritos'
-      description: 'Agrega o elimina a un usuario de la lista de favoritos.'
+      summary: 'Obtener lista de usuarios favoritos'
+      description: 'Devuelve la lista de usuarios favoritos por el usuario por su UUID.'
       parameters:
         - name: userUuid
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+      responses:
+        '200':
+          description: 'Lista de seguidos obtenida'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Usuario encontrado exitosamente'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortUserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: 'Usuario no encontrado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                NotFoundExample:
+                  value:
+                    success: false
+                    code: 404
+                    message: 'Usuario no encontrado'
+                    timestamp: 1633017600
+        '401':
+          description: 'No autorizado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                UnauthorizedExample:
+                  value:
+                    success: false
+                    code: 401
+                    message: 'No autorizado'
+                    timestamp: 1633017600
+    post:
+      tags:
+        - 'Following/Followers'
+      summary: 'Agregar o eliminar a un usuario de favoritos'
+      description: 'Agrega o elimina a un usuario de la lista de favoritos mediante su UUID'
+      parameters:
+        - name: userUuid
+          in: path
+          required: true
+          schema:
+            type: string
           example: 12345
       responses:
         '200':
@@ -940,6 +1020,7 @@ paths:
                     code: 401
                     message: 'No autorizado'
                     timestamp: 1633017600
+  #------------------------ posts Routes ------------------------#
 
   /posts/feed:
     get:
@@ -966,11 +1047,24 @@ paths:
             description: 'Número de página para la paginación del feed.'
       responses:
         '200':
-          description: 'Feed obtenido exitosamente'
+          description: 'Lista de seguidos obtenida'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedEntity'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Feed obtenido exitosamente'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: 'No autorizado'
           content:
