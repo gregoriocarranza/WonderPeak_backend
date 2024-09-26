@@ -1133,6 +1133,25 @@ paths:
       description: 'Create a post and returns it.'
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Title of the post.'
+                  example: 'Nature Adventures'
+                text:
+                  type: string
+                  description: 'Description of the content.'
+                  example: 'Exploring the vast forests!'
+                multimediaFile:
+                  type: string
+                  format: binary
+                  description: 'Upload your image file here. Accepts .jpg, .png up to 5MB.'
       responses:
         '200':
           description: 'Posts created successfully'
