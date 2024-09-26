@@ -117,11 +117,11 @@ components:
           description: 'The geographic location related to the post.'
           properties:
             latitud:
-              type: number
+              type: integer
               description: 'Latitude of the location.'
               example: 17.562
             longitude:
-              type: number
+              type: integer
               description: 'Longitude of the location.'
               example: -3.625
             mapsUrl:
@@ -200,11 +200,6 @@ components:
           type: string
           format: date-time
           description: Date and time the comment was made.
-      # required:
-      #   - userUuid
-      #   - postUuid
-      #   - text
-      #   - date
 
     Pagination:
       type: object
@@ -528,12 +523,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-        '404':
-          description: 'Resource not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound-404'
         '400':
           description: 'Error in the provided email'
           content:
@@ -591,12 +580,14 @@ paths:
 
   #------------------------ User Routes ------------------------#
 
-  /user:
+  /users:
     get:
       tags:
         - 'User'
       summary: 'Search for users by name, last name, or nickname'
       description: 'Allows searching for users in the system by their name, last name, or nickname. Supports pagination for large result sets.'
+      security:
+        - bearerAuth: []
       parameters:
         - name: name
           in: query
@@ -673,7 +664,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
-  /user/me:
+  /users/me:
     get:
       tags:
         - 'User'
@@ -709,13 +700,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
+    delete:
+      tags:
+        - User
+      summary: 'Deletes user.'
+      description: 'Deletes user.'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'User deleted succesfully'
+          content:
+            application/json:
+              examples:
+                SuccessfulResponse:
+                  value:
+                    message: 'User deleted succesfully'
+                    success: true
+              schema:
+                $ref: '#/components/schemas/GeneralResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+          description: 'Unauthorized'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+          description: 'User not found'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
-  /user/{userUuid}:
+  /users/{userUuid}:
     get:
       tags:
         - 'User'
       summary: 'Get user by UUID'
       description: 'Retrieves user data by UUID'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -833,55 +863,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
-    delete:
-      tags:
-        - User
-      summary: 'Deletes user by UUID.'
-      description: 'Deletes user by UUID.'
-      parameters:
-        - example: 66a3e747-2065-49ed-bb62-50ac084742bf
-          in: path
-          name: userUuid
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'User deleted succesfully'
-          content:
-            application/json:
-              examples:
-                SuccessfulResponse:
-                  value:
-                    message: 'User deleted succesfully'
-                    success: true
-              schema:
-                $ref: '#/components/schemas/GeneralResponse'
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedError-401'
-          description: 'Unauthorized'
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound-404'
-          description: 'User not found'
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError-500'
 
-  /user/{userUuid}/followers:
+  /users/{userUuid}/followers:
     get:
       tags:
         - 'Following/Followers'
       summary: 'Get followers list'
       description: 'Gets followers by user UUID'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -940,6 +930,8 @@ paths:
         - 'Following/Followers'
       summary: 'Delete a follower'
       description: 'Deletes user from followers list'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -980,12 +972,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
 
-  /user/{userUuid}/following:
+  /users/{userUuid}/following:
     get:
       tags:
         - 'Following/Followers'
       summary: 'Get following list'
       description: 'Get following list by UUID.'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -1044,6 +1038,8 @@ paths:
         - 'Following/Followers'
       summary: 'Follow or stop following a user'
       description: 'Adds a user to following list'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -1084,12 +1080,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
 
-  /user/{userUuid}/favorites:
+  /users/{userUuid}/favorites:
     get:
       tags:
         - 'Following/Followers'
       summary: 'Get favorites list'
       description: 'Gets user favorites list'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
@@ -1148,6 +1146,8 @@ paths:
         - 'Following/Followers'
       summary: 'Add or delete user to favorites list'
       description: 'Adds or deletes user to favorites list by UUID'
+      security:
+        - bearerAuth: []
       parameters:
         - name: userUuid
           in: path
