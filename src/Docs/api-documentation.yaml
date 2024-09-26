@@ -1282,6 +1282,7 @@ paths:
                   description: 'A detailed description of the post content.'
                 location:
                   type: string
+                  format: JSON
                   description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
                   example: '{"latitud": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
                 multimediaFile:
