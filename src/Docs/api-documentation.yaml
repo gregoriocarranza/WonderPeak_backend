@@ -114,15 +114,19 @@ components:
           example: 'Exploring the vast forests!'
         location:
           type: object
+          description: 'The geographic location related to the post.'
           properties:
             latitud:
-              type: integer
+              type: number
+              description: 'Latitude of the location.'
               example: 17.562
             longitude:
-              type: integer
+              type: number
+              description: 'Longitude of the location.'
               example: -3.625
             mapsUrl:
               type: string
+              description: 'URL to view the location on Google Maps.'
               example: 'https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5'
         multimediaUrl:
           type: string
@@ -1250,6 +1254,21 @@ paths:
         - bearerAuth: []
       requestBody:
         required: true
+        description: |
+          Create a post with the following fields. Although the data needs to be sent using `multipart/form-data` due to the file upload, below is a JSON representation of the expected data structure:
+
+          ```json
+          {
+            "title": "Nature Adventures",
+            "text": "Exploring the vast forests!",
+            "location": {
+              "latitude": 17.562,
+              "longitude": -3.625,
+              "mapsUrl": "https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5"
+            },
+            "multimediaFile": "file_content_here"
+          }
+          ```
         content:
           multipart/form-data:
             schema:
@@ -1257,16 +1276,18 @@ paths:
               properties:
                 title:
                   type: string
-                  description: 'Title of the post.'
-                  example: 'Nature Adventures'
+                  description: 'The title of the post. This is a short descriptive title.'
                 text:
                   type: string
-                  description: 'Description of the content.'
-                  example: 'Exploring the vast forests!'
+                  description: 'A detailed description of the post content.'
+                location:
+                  type: string
+                  description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
+                  example: '{"latitud": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
                 multimediaFile:
                   type: string
                   format: binary
-                  description: 'Upload your image file here. Accepts .jpg, .png up to 5MB.'
+                  description: 'Upload an image file (JPG or PNG, max size 5MB).'
       responses:
         '200':
           description: 'Posts created successfully'
