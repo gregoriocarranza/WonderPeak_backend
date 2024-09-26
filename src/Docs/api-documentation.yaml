@@ -29,7 +29,7 @@ components:
         message:
           type: string
           description: Descriptive message of the response
-          example: 'Email sent successfully'
+          example: 'Success.'
         data:
           type: object
           description: Response object (if any) or null
@@ -49,6 +49,15 @@ components:
         nickname:
           type: string
           example: 'johndoe123'
+        gender:
+          type: string
+          example: 'male'
+        profileUserImage:
+          type: string
+          example: 'https://example.com/profile.jpg'
+        profileCoverImage:
+          type: string
+          example: 'https://example.com/profileCover.jpg'
         bio:
           type: string
           example: 'Passionate technology developer.'
@@ -103,6 +112,18 @@ components:
         text:
           type: string
           example: 'Exploring the vast forests!'
+        location:
+          type: object
+          properties:
+            latitud:
+              type: integer
+              example: 17.562
+            longitude:
+              type: integer
+              example: -3.625
+            mapsUrl:
+              type: string
+              example: 'https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5'
         multimediaUrl:
           type: string
           example: 'https://example.com/image.jpg'
@@ -371,23 +392,42 @@ paths:
                   example: 'securePassword123'
       responses:
         '200':
-          description: 'Successful'
+          description: 'Login successful'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-        '404':
-          description: 'Resource not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound-404'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'User login successfully'
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                      refreshToken:
+                        type: string
+                        example: 'dGhpcy5pcy5hLnJlZnJlc2gudG9rZW4uZXhhbXBsZQ=='
+                      issued:
+                        type: integer
+                        example: 1633022800
         '401':
           description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /auth/register:
     post:
@@ -411,12 +451,18 @@ paths:
                 lastname:
                   type: string
                   example: 'Doe'
+                nickname:
+                  type: string
+                  example: 'jdoe'
+                gender:
+                  type: string
+                  example: 'male'
                 password:
                   type: string
                   example: 'securePassword123'
       responses:
         '201':
-          description: 'Successful'
+          description: 'User registration completed successfully'
           content:
             application/json:
               schema:
@@ -448,6 +494,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /auth/forgot_password:
     post:
@@ -484,6 +536,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError-400'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /auth/reset_password:
     post:
@@ -520,6 +578,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   #------------------------ User Routes ------------------------#
 
@@ -599,18 +663,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
-
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
   /user/me:
     get:
       tags:
         - 'User'
-      summary: 'Obtener usuario por JWT'
-      description: 'Devuelve la información del usuario asociado al JWT.'
+      summary: 'Get user data by JWT'
+      description: 'Returns user data'
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: 'Información del usuario obtenida exitosamente'
+          description: 'User information retrieved successfully.'
           content:
             application/json:
               schema:
@@ -621,22 +690,28 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Información del usuario obtenida exitosamente'
+                    example: 'Success.'
                   data:
                     $ref: '#/components/schemas/UserData'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /user/{userUuid}:
     get:
       tags:
         - 'User'
-      summary: 'Obtener usuario por UUID'
-      description: 'Devuelve la información del usuario por su UUID.'
+      summary: 'Get user by UUID'
+      description: 'Retrieves user data by UUID'
       parameters:
         - name: userUuid
           in: path
@@ -646,7 +721,7 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Información del usuario obtenida exitosamente'
+          description: 'User information retrieved successfully.'
           content:
             application/json:
               schema:
@@ -657,18 +732,23 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Información del usuario obtenida exitosamente'
+                    example: 'User information retrieved successfully.'
                   data:
                     $ref: '#/components/schemas/UserData'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
-
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
         '404':
-          description: 'Recurso no encontrado'
+          description: 'Not found'
           content:
             application/json:
               schema:
@@ -676,8 +756,8 @@ paths:
     put:
       tags:
         - 'User'
-      summary: 'Actualizar mis datos de usuario'
-      description: 'Permite actualizar los datos de perfil del usuario autenticado.'
+      summary: 'Update user data'
+      description: 'Allows a logged in user to update personal data'
       parameters:
         - name: userUuid
           in: path
@@ -694,30 +774,30 @@ paths:
             schema:
               type: object
               properties:
-                nombre:
+                firstname:
                   type: string
                   example: 'John'
-                apellido:
+                lastname:
                   type: string
                   example: 'Doe'
                 nickname:
                   type: string
                   example: 'johndoe123'
-                biografía:
+                bio:
                   type: string
-                  example: 'Desarrollador apasionado de la tecnología.'
-                genero:
+                  example: 'I am a passionate creative designer'
+                gender:
                   type: string
-                  example: 'Masculino'
-                fotoPerfil:
+                  example: 'male'
+                profileUserImage:
                   type: string
-                  example: 'https://example.com/perfil.jpg'
-                fotoPortada:
+                  example: 'https://example.com/profile.jpg'
+                profileCoverImage:
                   type: string
-                  example: 'https://example.com/portada.jpg'
+                  example: 'https://example.com/profileCover.jpg'
       responses:
         '200':
-          description: 'Información del usuario obtenida exitosamente'
+          description: 'User data updated succesfully.'
           content:
             application/json:
               schema:
@@ -728,7 +808,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Datos del usuario actualizados exitosamente'
+                    example: 'User data updated succesfully.'
                   data:
                     $ref: '#/components/schemas/UserData'
         '400':
@@ -738,15 +818,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError-400'
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
     delete:
       tags:
         - User
-      description: Elimina el usuario identificado por UUID.
+      summary: 'Deletes user by UUID.'
+      description: 'Deletes user by UUID.'
       parameters:
         - example: 66a3e747-2065-49ed-bb62-50ac084742bf
           in: path
@@ -756,36 +843,41 @@ paths:
             type: string
       responses:
         '200':
+          description: 'User deleted succesfully'
           content:
             application/json:
               examples:
                 SuccessfulResponse:
                   value:
-                    message: Usuario eliminado exitosamente
+                    message: 'User deleted succesfully'
                     success: true
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-          description: Usuario eliminado exitosamente
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
-          description: No autorizado
+          description: 'Unauthorized'
         '404':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFound-404'
-          description: Usuario no encontrado
-      summary: Eliminar usuario por UUID
+          description: 'User not found'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /user/{userUuid}/followers:
     get:
       tags:
         - 'Following/Followers'
-      summary: 'Obtener lista de seguidores'
-      description: 'Devuelve la lista de seguidores de un usuario por su UUID.'
+      summary: 'Get followers list'
+      description: 'Gets followers by user UUID'
       parameters:
         - name: userUuid
           in: path
@@ -795,7 +887,7 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Información del usuario obtenida exitosamente'
+          description: 'Followers list successfully retrieved'
           content:
             application/json:
               schema:
@@ -806,7 +898,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Usuario encontrado exitosamente'
+                    example: 'Success'
                   data:
                     type: array
                     items:
@@ -814,7 +906,7 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -824,20 +916,26 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     delete:
       tags:
         - 'Following/Followers'
-      summary: 'Eliminar un seguidor'
-      description: 'Elimina a un usuario de la lista de seguidores.'
+      summary: 'Delete a follower'
+      description: 'Deletes user from followers list'
       parameters:
         - name: userUuid
           in: path
@@ -847,18 +945,13 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Seguidor eliminado exitosamente'
+          description: 'User deletion completed successfully'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Seguidor eliminado exitosamente'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -868,21 +961,27 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /user/{userUuid}/following:
     get:
       tags:
         - 'Following/Followers'
-      summary: 'Obtener lista de seguidos'
-      description: 'Devuelve la lista de usuarios seguidos por el usuario por su UUID.'
+      summary: 'Get following list'
+      description: 'Get following list by UUID.'
       parameters:
         - name: userUuid
           in: path
@@ -892,7 +991,7 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Lista de seguidos obtenida'
+          description: 'Following list retrieved successfully'
           content:
             application/json:
               schema:
@@ -903,7 +1002,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Usuario encontrado exitosamente'
+                    example: 'Success'
                   data:
                     type: array
                     items:
@@ -911,7 +1010,7 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -921,20 +1020,26 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     put:
       tags:
         - 'Following/Followers'
-      summary: 'Agregar o quitar follow a un usuario'
-      description: 'Agrega a un usuario a la lista de seguidos.'
+      summary: 'Follow or stop following a user'
+      description: 'Adds a user to following list'
       parameters:
         - name: userUuid
           in: path
@@ -944,18 +1049,13 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Usuario seguido exitosamente'
+          description: 'The user was successfully followed or unfollowed'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Usuario seguido exitosamente'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -965,21 +1065,27 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /user/{userUuid}/favorites:
     get:
       tags:
         - 'Following/Followers'
-      summary: 'Obtener lista de usuarios favoritos'
-      description: 'Devuelve la lista de usuarios favoritos por el usuario por su UUID.'
+      summary: 'Get favorites list'
+      description: 'Gets user favorites list'
       parameters:
         - name: userUuid
           in: path
@@ -989,7 +1095,7 @@ paths:
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       responses:
         '200':
-          description: 'Lista de seguidos obtenida'
+          description: 'Favorites list successfully retrieved'
           content:
             application/json:
               schema:
@@ -1000,7 +1106,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Usuario encontrado exitosamente'
+                    example: 'Success'
                   data:
                     type: array
                     items:
@@ -1008,7 +1114,7 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -1018,20 +1124,26 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     put:
       tags:
         - 'Following/Followers'
-      summary: 'Agregar o eliminar a un usuario de favoritos'
-      description: 'Agrega o elimina a un usuario de la lista de favoritos mediante su UUID'
+      summary: 'Add or delete user to favorites list'
+      description: 'Adds or deletes user to favorites list by UUID'
       parameters:
         - name: userUuid
           in: path
@@ -1041,22 +1153,13 @@ paths:
           example: 12345
       responses:
         '200':
-          description: 'Favoritos actualizados exitosamente'
+          description: 'The user was successfully added to or removed from the favorites list'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Favoritos actualizados exitosamente'
-                    data:
-                      favoritos:
-                        - 'user1'
-                        - 'user2'
         '404':
-          description: 'Usuario no encontrado'
+          description: 'User not found'
           content:
             application/json:
               schema:
@@ -1066,14 +1169,20 @@ paths:
                   value:
                     success: false
                     code: 404
-                    message: 'Usuario no encontrado'
+                    message: 'User not found'
                     timestamp: 1633017600
         '401':
-          description: 'No autorizado'
+          description: 'Unauthorized'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   #------------------------ posts Routes ------------------------#
   /posts:
@@ -1125,6 +1234,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     post:
       tags:
@@ -1176,6 +1291,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /posts/{postUuid}:
     get:
@@ -1198,20 +1319,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Post retrieved successfully'
-                    data:
-                      postUuid: 123
-                      title: 'Adventures in the wild'
-                      text: 'Exploring the vast forests!'
-                      multimediaUrl: 'https://example.com/image.jpg'
-                      commentsCount: 5
-                      likesCount: 120
-                      creationDate: '2021-07-16T19:20:30Z'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Feed retrieved successfully'
+                  data:
+                    $ref: '#/components/schemas/Post'
         '404':
           description: 'Post not found'
           content:
@@ -1225,6 +1342,18 @@ paths:
                     code: 404
                     message: 'Post not found'
                     timestamp: 1633017600
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
     put:
       tags:
         - 'Posts'
@@ -1251,20 +1380,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Post updated successfully'
-                    data:
-                      postUuid: 123
-                      title: 'Adventures in the wild'
-                      text: 'Exploring the vast forests!'
-                      multimediaUrl: 'https://example.com/image.jpg'
-                      commentsCount: 5
-                      likesCount: 120
-                      creationDate: '2021-07-16T19:20:30Z'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Feed retrieved successfully'
+                  data:
+                    $ref: '#/components/schemas/Post'
         '404':
           description: 'Post not found'
           content:
@@ -1284,6 +1409,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     delete:
       tags:
@@ -1306,11 +1437,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneralResponse'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    success: true
-                    message: 'Post deleted successfully'
         '404':
           description: 'Post not found'
           content:
@@ -1323,6 +1449,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   /posts/feed:
     get:
@@ -1373,6 +1505,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
   #------------------------ comments Routes ------------------------#
 
@@ -1433,6 +1571,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
     post:
       tags:
         - 'Comments'
@@ -1477,6 +1621,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
         '400':
           description: 'Bad Request'
           content:
@@ -1522,6 +1672,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFound-404'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     put:
       tags:
@@ -1572,6 +1734,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
 
     delete:
       tags:
@@ -1614,3 +1782,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
