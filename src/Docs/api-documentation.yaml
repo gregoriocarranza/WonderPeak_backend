@@ -72,10 +72,6 @@ components:
         level:
           type: integer
           example: 10
-        posts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Post'
 
     ShortUserData:
       type: object
@@ -415,6 +411,9 @@ paths:
                       issued:
                         type: integer
                         example: 1633022800
+                      validAT:
+                        type: integer
+                        example: 1633
         '401':
           description: 'Unauthorized'
           content:
@@ -455,6 +454,7 @@ paths:
                   example: 'jdoe'
                 gender:
                   type: string
+                  enum: [male, female, other]
                   example: 'male'
                 password:
                   type: string
@@ -647,7 +647,9 @@ paths:
                     type: string
                     example: 'User found successfully'
                   data:
-                    $ref: '#/components/schemas/ShortUserData'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortUserData'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '404':
@@ -1201,61 +1203,6 @@ paths:
 
   #------------------------ posts Routes ------------------------#
   /posts:
-    get:
-      tags:
-        - 'Posts'
-      summary: 'Get all posts'
-      description: 'Returns a paginated list of posts.'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-            description: 'Page number for post pagination.'
-        - name: count
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 1
-            description: 'Page number for post pagination.'
-      responses:
-        '200':
-          description: 'Posts list retrieved'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: 'Posts retrieved successfully'
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Post'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '401':
-          description: 'Unauthorized'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedError-401'
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError-500'
-
     post:
       tags:
         - 'Posts'
@@ -1318,6 +1265,68 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Post'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
+
+  /posts/user/{userUuid}:
+    get:
+      tags:
+        - 'Posts'
+      summary: 'Get all user´s posts'
+      description: 'Returns a paginated list of posts of an user.'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 'asdasdsgawtc'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for post pagination.'
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            description: 'Page number for post pagination.'
+      responses:
+        '200':
+          description: 'Posts list retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Posts retrieved successfully'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: 'Unauthorized'
           content:
@@ -1476,6 +1485,120 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFound-404'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
+
+  /posts/{postUuid}/favorite:
+    put:
+      tags:
+        - 'Posts'
+      summary: 'Add or remove a post to favorites list'
+      description: 'Add or remove a post to favorites list'
+      parameters:
+        - name: postUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'Post added or remove to favorites successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Post added or remove to favorites successfully'
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: 'Post not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+              examples:
+                NotFoundExample:
+                  value:
+                    success: false
+                    code: 404
+                    message: 'Post not found'
+                    timestamp: 1633017600
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
+
+  /posts/{postUuid}/like:
+    put:
+      tags:
+        - 'Posts'
+      summary: 'Like or remove like a post'
+      description: 'Like or unlike a post'
+      parameters:
+        - name: postUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'Post liked toggle successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Post liked toggle successfully'
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: 'Post not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound-404'
+              examples:
+                NotFoundExample:
+                  value:
+                    success: false
+                    code: 404
+                    message: 'Post not found'
+                    timestamp: 1633017600
         '401':
           description: 'Unauthorized'
           content:
