@@ -1,13 +1,6 @@
-import express, { Application, Request, Response } from 'express';
+import app from './app';
 
-const app: Application = express();
+// @ts-ignore
+const port: number = +process.env.PORT ?? 3000;
 
-app.use(express.json());
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Bienvenido a la API en TypeScript');
-});
-
-// Configurar el puerto
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+app.listen(port, () => console.info(`Server up and running on port ${port}`));
