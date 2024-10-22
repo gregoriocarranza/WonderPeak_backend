@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { IHealthController } from '../../controller/health/health.controller.interface';
-import { HealthController } from '../../controller/health/health.controller';
+import { IHealthController } from '../../Controller/health/health.controller.interface';
+import { HealthController } from '../../Controller/health/health.controller';
 
 export class HealthRouter {
   public router: Router = Router();

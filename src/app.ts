@@ -4,7 +4,8 @@ import express, { Application } from 'express';
 import cookieParser from 'cookie-parser';
 import { errorMiddleware } from './Middlewares/error.middleware';
 import morgan from 'morgan';
-import { HealthRouter } from './routes/health/health.routes';
+import path from 'path';
+import { HealthRouter } from './Routes/health/health.routes';
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.ENVIRONMENT != 'production') {
   app.use(morgan('tiny'));
 }
+
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/api/health', new HealthRouter().router);
 
