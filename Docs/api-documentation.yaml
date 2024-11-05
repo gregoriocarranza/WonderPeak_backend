@@ -6,6 +6,8 @@ info:
 
 servers:
   # Added by API Auto Mocking Plugin
+  - description: SwaggerHub Local
+    url: http://localhost:3030/api
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
 

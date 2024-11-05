@@ -17,13 +17,14 @@ const knexInstance = new KnexConnection().knex;
         table.string('email').unique();
         table.string('nickname').defaultTo('Anonymous');
         table.string('profile_image').defaultTo(null);
-        // .defaultTo(`http://localhost:${process.env.PORT}/profileImgs/defaultProfileImage.jpg);||||
+        // .defaultTo(`http://localhost:${process.env.PORT}/profileImgs/defaultProfileImage.jpg);
         table.string('cover_image').defaultTo(null);
         // .defaultTo(`http://localhost:${process.env.PORT}/profileImgs/defaultCoverImage.jpg`);
         table.text('description');
         table.string('gender');
         table.integer('gamification_level').defaultTo(1);
         table.boolean('active').defaultTo(true);
+        table.string('auth0_id');
         table.timestamp('created_at').defaultTo(knexInstance.fn.now());
         table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
       });
@@ -34,31 +35,31 @@ const knexInstance = new KnexConnection().knex;
 
     //----------- Tabla de seguimiento  -----------
 
-    tableExists = await knexInstance.schema.hasTable('following/followers');
-    if (!tableExists) {
-      await knexInstance.schema.createTable('following/followers', (table) => {
-        table.increments('id').primary();
-        table
-          .string('from')
-          .unsigned()
-          .references('user_uuid')
-          .inTable('user')
-          .onDelete('CASCADE')
-          .withKeyName('fk_from_user');
-        table
-          .string('to')
-          .unsigned()
-          .references('user_uuid')
-          .inTable('user')
-          .onDelete('CASCADE')
-          .withKeyName('fk_to_user');
-        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
-        table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
-      });
-      console.log('following/followers table created successfully.');
-    } else {
-      console.log('Table following/followers already exists.');
-    }
+    // tableExists = await knexInstance.schema.hasTable('following/followers');
+    // if (!tableExists) {
+    //   await knexInstance.schema.createTable('following/followers', (table) => {
+    //     table.increments('id').primary();
+    //     table
+    //       .string('from')
+    //       .unsigned()
+    //       .references('user_uuid')
+    //       .inTable('user')
+    //       .onDelete('CASCADE')
+    //       .withKeyName('fk_from_user');
+    //     table
+    //       .string('to')
+    //       .unsigned()
+    //       .references('user_uuid')
+    //       .inTable('user')
+    //       .onDelete('CASCADE')
+    //       .withKeyName('fk_to_user');
+    //     table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+    //     table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
+    //   });
+    //   console.log('following/followers table created successfully.');
+    // } else {
+    //   console.log('Table following/followers already exists.');
+    // }
   } catch (error) {
     console.error('Error managing the tables:', error);
   } finally {
