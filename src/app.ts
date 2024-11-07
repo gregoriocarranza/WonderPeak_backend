@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import { AuthRouter } from './Routes/Auth.routes';
+import { UserRouter } from './Routes/User.routes';
 
 dotenv.config();
 
@@ -34,13 +35,14 @@ app.use(express.urlencoded({ extended: true }));
 
 if (process.env.ENVIRONMENT != 'production') {
   app.use(morgan('tiny'));
-  app.use('/api/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/api/health', new HealthRouter().router);
 app.use('/api/auth', new AuthRouter().router);
+app.use('/api/users', new UserRouter().router);
 
 app.use(errorMiddleware);
 

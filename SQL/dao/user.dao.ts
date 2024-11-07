@@ -36,19 +36,18 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
   }
 
   public async searchAll(
-    searchTerm: string | null,
     offset: number = 0,
-    limit: number = 20
+    limit: number = 20,
+    searchTerm?: string | null
   ): Promise<any> {
     const query = this._knexConnection
       .knex<IUser>('user')
       .select()
-      .options({ nestTables: true, rowMode: 'object' }) // Mantener las opciones solicitadas
+      .options({ nestTables: true, rowMode: 'object' })
       .offset(offset)
       .limit(limit);
 
-    // Si hay un término de búsqueda, aplicamos el filtro
-    if (searchTerm) {
+    if (searchTerm != null) {
       query.where((builder) => {
         builder
           .where('user.name', 'like', `%${searchTerm}%`)
@@ -58,8 +57,6 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
     }
 
     const data = await query;
-
-    // Contar el total de usuarios
     const count: any = await this._knexConnection
       .knex<IUser>('user')
       .count('user_uuid as total');
@@ -153,6 +150,7 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
       user_uuid: user?.userUuid,
       name: user?.name,
       lastname: user?.lastname,
+      nickname: user?.nickname,
       email: user?.email,
       profile_image: user?.profileImage,
       cover_image: user?.coverImage,

@@ -1,4 +1,4 @@
-import { IBaseDAO } from "./IBaseDAO";
+import { IBaseDAO } from './IBaseDAO';
 
 export interface IUser {
   id?: number;
@@ -27,8 +27,8 @@ export interface IRegisterUser {
 
 export interface IUserDAO<I, O> extends IBaseDAO<I, O> {
   searchAll: (
-    searchTerm: string | null,
     offset: number,
-    limit: number
+    limit: number,
+    searchTerm?: string | null
   ) => Promise<any>;
 }
