@@ -1,4 +1,5 @@
 import { UserDAO } from '../../../SQL/dao/user.dao';
+import { FollowerDAO } from '../../../SQL/dao/follower.dao';
 import { UserInputDTO } from '../../../SQL/dto/user/user.input.dto';
 import { FollowerInputDTO } from '../../../SQL/dto/follower/follower.input.dto';
 import { IUser } from '../../../SQL/Interface/IUser';
@@ -6,6 +7,7 @@ import { IDataPaginator } from '../interfaces/IDataPaginator';
 
 export class UserService {
   private _userDAO: UserDAO = new UserDAO();
+  private _followerDAO: FollowerDAO = new FollowerDAO();
   constructor() {}
 
   async getAll(
@@ -48,16 +50,19 @@ export class UserService {
   }
 
   public async followUser(followDTO: FollowerInputDTO): Promise<void> {
-    return await this._userDAO.follow(followDTO);
+    return await this._followerDAO.follow(followDTO);
   }
   public async unfollowUser(followDTO: FollowerInputDTO): Promise<void> {
-    return await this._userDAO.unfollow(followDTO);
+    return await this._followerDAO.unfollow(followDTO);
   }
   public async isFollowing(followDTO: FollowerInputDTO): Promise<boolean> {
-    return await this._userDAO.isFollowing(followDTO);
+    return await this._followerDAO.isFollowing(followDTO);
   }
 
   set userDAO(userDAO: UserDAO) {
     this._userDAO = userDAO;
+  }
+  set followerDAO(followerDAO: FollowerDAO) {
+    this._followerDAO = followerDAO;
   }
 }

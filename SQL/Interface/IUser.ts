@@ -32,3 +32,9 @@ export interface IUserDAO<I, O> extends IBaseDAO<I, O> {
     searchTerm?: string | null
   ) => Promise<any>;
 }
+
+export interface IFollower {
+  id?: number;
+  followerUuid: string;
+  followedUuid: string;
+}
