@@ -42,7 +42,7 @@ components:
         userUuid:
           type: string
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-        firstName:
+        name:
           type: string
           example: 'John'
         lastName:
@@ -81,7 +81,7 @@ components:
         userUuid:
           type: string
           example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-        firstName:
+        name:
           type: string
           example: 'John'
         lastName:
@@ -445,7 +445,7 @@ paths:
                 email:
                   type: string
                   example: 'example@example.com'
-                firstname:
+                name:
                   type: string
                   example: 'John'
                 lastname:
@@ -625,14 +625,14 @@ paths:
           required: false
           schema:
             type: integer
-            default: 1
+            default: 0
             description: 'Page number for user pagination.'
-        - name: count
+        - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 1
+            default: 20
             description: 'Number of users to retrieve per page.'
       responses:
         '200':
@@ -703,6 +703,82 @@ paths:
                     example: 'Success.'
                   data:
                     $ref: '#/components/schemas/UserData'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
+    put:
+      tags:
+        - 'User'
+      summary: 'Update user data'
+      description: 'Allows a logged in user to update personal data'
+      parameters:
+        - name: userUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 'John'
+                lastname:
+                  type: string
+                  example: 'Doe'
+                nickname:
+                  type: string
+                  example: 'johndoe123'
+                bio:
+                  type: string
+                  example: 'I am a passionate creative designer'
+                gender:
+                  type: string
+                  example: 'male'
+                profileUserImage:
+                  type: string
+                  example: 'https://example.com/profile.jpg'
+                profileCoverImage:
+                  type: string
+                  example: 'https://example.com/profileCover.jpg'
+      responses:
+        '200':
+          description: 'User data updated succesfully.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'User data updated succesfully.'
+                  data:
+                    $ref: '#/components/schemas/UserData'
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError-400'
         '401':
           description: 'Unauthorized'
           content:
@@ -802,82 +878,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFound-404'
-    put:
-      tags:
-        - 'User'
-      summary: 'Update user data'
-      description: 'Allows a logged in user to update personal data'
-      parameters:
-        - name: userUuid
-          in: path
-          required: true
-          schema:
-            type: string
-          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstname:
-                  type: string
-                  example: 'John'
-                lastname:
-                  type: string
-                  example: 'Doe'
-                nickname:
-                  type: string
-                  example: 'johndoe123'
-                bio:
-                  type: string
-                  example: 'I am a passionate creative designer'
-                gender:
-                  type: string
-                  example: 'male'
-                profileUserImage:
-                  type: string
-                  example: 'https://example.com/profile.jpg'
-                profileCoverImage:
-                  type: string
-                  example: 'https://example.com/profileCover.jpg'
-      responses:
-        '200':
-          description: 'User data updated succesfully.'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: 'User data updated succesfully.'
-                  data:
-                    $ref: '#/components/schemas/UserData'
-        '400':
-          description: 'Bad Request'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationError-400'
-        '401':
-          description: 'Unauthorized'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnauthorizedError-401'
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError-500'
 
   /users/{userUuid}/followers:
     get:
@@ -1300,14 +1300,14 @@ paths:
           required: false
           schema:
             type: integer
-            default: 1
+            default: 0
             description: 'Page number for post pagination.'
-        - name: count
+        - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 1
+            default: 20
             description: 'Page number for post pagination.'
       responses:
         '200':
@@ -1628,14 +1628,14 @@ paths:
           required: false
           schema:
             type: integer
-            default: 1
+            default: 0
             description: 'Page number for feed pagination.'
-        - name: count
+        - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 1
+            default: 20
             description: 'Page number for feed pagination.'
       responses:
         '200':
@@ -1697,14 +1697,14 @@ paths:
           required: false
           schema:
             type: integer
-            default: 1
+            default: 0
             description: 'Page number for comments pagination.'
-        - name: count
+        - name: limit
           in: query
           required: false
           schema:
             type: integer
-            default: 1
+            default: 20
             description: 'Page number for comments pagination.'
       responses:
         '200':
