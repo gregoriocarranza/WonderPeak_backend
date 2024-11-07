@@ -26,6 +26,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const { name, lastName, nickname } = req.query;
       const { page, limit } = paginationHelper(req);
       const newpage: number = page;
       let newLimit: number = limit;
@@ -33,7 +34,8 @@ export class UserController implements IUserController {
       const offset = newpage * newLimit;
       const result: IDataPaginator<IUser> = await this._userService.getAll(
         offset,
-        newLimit
+        newLimit,
+        name || lastName || nickname || null
       );
       const usersPromises: Promise<UserDTO>[] =
         result.data?.map(async (a) => await new UserDTO(a).build()) || [];
@@ -91,13 +93,13 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { uuid } = req.params;
-      const inputDto: UuidInputDTO = new UuidInputDTO(uuid).build();
+      const { userUuid } = req.params;
+      const inputDto: UuidInputDTO = new UuidInputDTO(userUuid).build();
       const validation: IInputValidator = await inputValidator(inputDto);
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
       }
-      const user: IUser | null = await this._userService.getByUuid(uuid);
+      const user: IUser | null = await this._userService.getByUuid(userUuid);
       if (!user) {
         return next(await parseError('User not found', 404));
       }
@@ -117,7 +119,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { uuid } = req.params;
+      const { userUuid } = req.user;
       const userMiscUpdateInputDTO: UserMiscUpdateInputDTO =
         new UserMiscUpdateInputDTO({
           ...req.body,
@@ -128,7 +130,7 @@ export class UserController implements IUserController {
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
       }
-      Object.assign(userMiscUpdateInputDTO, { userUuid: uuid });
+      Object.assign(userMiscUpdateInputDTO, { userUuid });
       const user: IUser | null = await this._userService.update(
         userMiscUpdateInputDTO
       );
@@ -190,13 +192,13 @@ export class UserController implements IUserController {
   }
 
   public async delete(
-    req: IRequestExtended,
+    req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const { uuid } = req.params;
-      const inputDto: UuidInputDTO = new UuidInputDTO(uuid).build();
+      const { userUuid } = req.user;
+      const inputDto: UuidInputDTO = new UuidInputDTO(userUuid).build();
       const validation: IInputValidator = await inputValidator(inputDto);
       if (!validation.success) {
         return next(await parseError(validation.message, 400));

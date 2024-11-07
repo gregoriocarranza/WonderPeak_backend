@@ -8,11 +8,11 @@ export class UserService {
   constructor() {}
 
   async getAll(
-    searchTerm: string | null,
     offset: number,
-    limit: number
+    limit: number,
+    searchTerm?: string | null
   ): Promise<IDataPaginator<IUser>> {
-    return await this._userDAO.searchAll(searchTerm, offset, limit);
+    return await this._userDAO.searchAll(offset, limit, searchTerm);
   }
 
   async getById(id: number): Promise<IUser | null> {
