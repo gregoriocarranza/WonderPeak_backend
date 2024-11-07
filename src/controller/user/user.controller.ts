@@ -225,7 +225,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const followerUuid = req.user.userUuid;
+      const { userUuid: followerUuid }= req.user
       const { userUuid: followedUuid } = req.params;
 
       if (followerUuid === followedUuid) {
