@@ -59,6 +59,10 @@ export class UserService {
     return await this._followerDAO.isFollowing(followDTO);
   }
 
+  public async favoriteUser(followDTO: FollowerInputDTO): Promise<boolean> {
+    return await this._followerDAO.favoriteUser(followDTO);
+  }
+
   set userDAO(userDAO: UserDAO) {
     this._userDAO = userDAO;
   }

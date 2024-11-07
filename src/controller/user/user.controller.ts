@@ -256,4 +256,40 @@ export class UserController implements IUserController {
       next(error);
     }
   }
+
+  public async favoriteUser(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid: followerUuid }= req.user
+      const { userUuid: followedUuid } = req.params;
+
+      if (followerUuid === followedUuid) {
+        throw new Error('Cannot favorite yourself');
+      }
+
+      const favoriteDTO = new FollowerInputDTO({
+        followerUuid,
+        followedUuid,
+      });
+
+      const isFavorite = await this._userService.favoriteUser(favoriteDTO);
+
+      if (isFavorite) {
+        res.status(200).json({
+          success: true,
+          message: 'Successfully add user to favorites'
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: 'Successfully remove user from favorites'
+        });
+      }
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

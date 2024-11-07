@@ -51,6 +51,7 @@ const knexInstance = new KnexConnection().knex;
           .inTable('user')
           .onDelete('CASCADE')
           .withKeyName('fk_followed_user');
+        table.boolean('favorite').defaultTo(false);
         table.timestamp('created_at').defaultTo(knexInstance.fn.now());
         table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
       });

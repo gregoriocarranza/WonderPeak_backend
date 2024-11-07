@@ -6,9 +6,9 @@ export class FollowerDAO implements IFollower {
   private _knexConnection: KnexConnection = new KnexConnection();
   public followerUuid!: string;
   public followedUuid!: string;
+  public favorite!: boolean;
 
   constructor() {}
-
 
   public async follow(followDTO: FollowerInputDTO): Promise<void> {
     await this._knexConnection
@@ -40,6 +40,21 @@ export class FollowerDAO implements IFollower {
         followed_uuid: followDTO.userFollowedUuid
       })
       .first();
+    return !!data;
+  }
+
+  public async favoriteUser(followDTO: FollowerInputDTO): Promise<boolean> {
+    const data = await this._knexConnection
+      .knex('follower')
+      .update({
+        updated_at: this._knexConnection.knex.fn.now(),
+        favorite: this._knexConnection.knex.raw('NOT favorite')
+      })
+      .where({
+        follower_uuid: followDTO.userFollowerUuid,
+        followed_uuid: followDTO.userFollowedUuid
+      })
+      .returning('favorite');
     return !!data;
   }
 

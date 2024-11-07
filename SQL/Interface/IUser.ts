@@ -37,4 +37,5 @@ export interface IFollower {
   id?: number;
   followerUuid: string;
   followedUuid: string;
+  favorite: boolean;
 }

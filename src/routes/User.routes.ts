@@ -42,5 +42,11 @@ export class UserRouter {
       userMandatory,
       this._userController.followUser.bind(this._userController)
     );
+    this.router.put(
+      '/:userUuid/favorites',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.favoriteUser.bind(this._userController)
+    );
   }
 }
