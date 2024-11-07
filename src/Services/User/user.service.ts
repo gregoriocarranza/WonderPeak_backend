@@ -1,5 +1,6 @@
 import { UserDAO } from '../../../SQL/dao/user.dao';
 import { UserInputDTO } from '../../../SQL/dto/user/user.input.dto';
+import { FollowerInputDTO } from '../../../SQL/dto/follower/follower.input.dto';
 import { IUser } from '../../../SQL/Interface/IUser';
 import { IDataPaginator } from '../interfaces/IDataPaginator';
 
@@ -44,6 +45,16 @@ export class UserService {
 
   async delete(uuid: string): Promise<void> {
     return await this._userDAO.delete(uuid);
+  }
+
+  public async followUser(followDTO: FollowerInputDTO): Promise<void> {
+    return await this._userDAO.follow(followDTO);
+  }
+  public async unfollowUser(followDTO: FollowerInputDTO): Promise<void> {
+    return await this._userDAO.unfollow(followDTO);
+  }
+  public async isFollowing(followDTO: FollowerInputDTO): Promise<boolean> {
+    return await this._userDAO.isFollowing(followDTO);
   }
 
   set userDAO(userDAO: UserDAO) {

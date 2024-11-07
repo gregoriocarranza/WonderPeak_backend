@@ -1,4 +1,5 @@
 import { UserInputDTO } from '../../../SQL/dto/user/user.input.dto';
+import { FollowerInputDTO } from '../../../SQL/dto/follower/follower.input.dto';
 import { SqlValidatorError } from '../../../SQL/error/sql.validator.error';
 import { IUser } from '../../../SQL/Interface/IUser';
 import { UuidInputDTO } from '../../dto/input/uuid.input.dto';
@@ -215,6 +216,44 @@ export class UserController implements IUserController {
         console.error(err.message, err.stack);
         next(new Error('Error deleting an User'));
       }
+    }
+  }
+
+  public async followUser(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const followerUuid = req.user.userUuid;
+      const { userUuid: followedUuid } = req.params;
+
+      if (followerUuid === followedUuid) {
+        throw new Error('Cannot follow yourself');
+      }
+
+      const followDTO = new FollowerInputDTO({
+        followerUuid,
+        followedUuid
+      });
+
+      const isFollowing = await this._userService.isFollowing(followDTO);
+
+      if (isFollowing) {
+        await this._userService.unfollowUser(followDTO);
+        res.status(200).json({
+          success: true,
+          message: 'Successfully unfollowed user'
+        });
+      } else {
+        await this._userService.followUser(followDTO);
+        res.status(200).json({
+          success: true,
+          message: 'Successfully followed user'
+        });
+      }
+    } catch (error: any) {
+      next(error);
     }
   }
 }

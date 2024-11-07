@@ -18,4 +18,5 @@ export interface IUserController extends ICrudController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  followUser(req: IRequestExtendedUser, res: Response, next: NextFunction): Promise<void>;
 }

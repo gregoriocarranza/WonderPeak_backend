@@ -36,5 +36,11 @@ export class UserRouter {
       userMandatory,
       this._userController.updateMisc.bind(this._userController)
     );
+    this.router.put(
+      '/:userUuid/following',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.followUser.bind(this._userController)
+    );
   }
 }
