@@ -180,6 +180,7 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
     };
   }
 
+
   set knexConnection(knexConnection: KnexConnection) {
     this._knexConnection = knexConnection;
   }

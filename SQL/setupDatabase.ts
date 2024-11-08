@@ -35,31 +35,30 @@ const knexInstance = new KnexConnection().knex;
 
     //----------- Tabla de seguimiento  -----------
 
-    // tableExists = await knexInstance.schema.hasTable('following/followers');
-    // if (!tableExists) {
-    //   await knexInstance.schema.createTable('following/followers', (table) => {
-    //     table.increments('id').primary();
-    //     table
-    //       .string('from')
-    //       .unsigned()
-    //       .references('user_uuid')
-    //       .inTable('user')
-    //       .onDelete('CASCADE')
-    //       .withKeyName('fk_from_user');
-    //     table
-    //       .string('to')
-    //       .unsigned()
-    //       .references('user_uuid')
-    //       .inTable('user')
-    //       .onDelete('CASCADE')
-    //       .withKeyName('fk_to_user');
-    //     table.timestamp('created_at').defaultTo(knexInstance.fn.now());
-    //     table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
-    //   });
-    //   console.log('following/followers table created successfully.');
-    // } else {
-    //   console.log('Table following/followers already exists.');
-    // }
+    tableExists = await knexInstance.schema.hasTable('follower');
+    if (!tableExists) {
+      await knexInstance.schema.createTable('follower', (table) => {
+        table.increments('id').primary();
+        table
+          .string('follower_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_follower_user');
+        table
+          .string('followed_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_followed_user');
+        table.boolean('favorite').defaultTo(false);
+        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+        table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
+      });
+      console.log('following/followers table created successfully.');
+    } else {
+      console.log('Table following/followers already exists.');
+    }
   } catch (error) {
     console.error('Error managing the tables:', error);
   } finally {
