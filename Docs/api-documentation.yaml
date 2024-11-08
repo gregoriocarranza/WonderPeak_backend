@@ -552,7 +552,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            format: string
             example: '66a3e747-2065-49ed-bb62-50ac084742bf'
             description: 'Token that the user received in their email.'
       requestBody:

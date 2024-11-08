@@ -90,10 +90,17 @@ export class AuthService {
         }
       );
       const data: any = await response.json();
+
+      if (response.status >= 400) {
+        throw new Error(
+          data.error || 'Failed to login, retry user and password'
+        );
+      }
+
       return data;
     } catch (error: Error | any) {
       console.error(error.message);
-      throw new Error('Error while login the User');
+      throw new Error(`Error while login the User: ${error.message}`);
     }
   }
 
@@ -134,5 +141,38 @@ export class AuthService {
     }
     console.log('Email updated successfully');
     return data;
+  }
+
+  public async changeUserPassword(
+    userId: string,
+    newPassword: string
+  ): Promise<any> {
+    try {
+      const accessToken: string = await this.getAccessToken();
+      const url = `https://${this.AUTH0_DOMAIN}/api/v2/users/${userId}`;
+
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          password: newPassword,
+          connection: 'Username-Password-Authentication',
+        }),
+      });
+
+      const data = await response.json();
+      if (response.status >= 400) {
+        throw new Error(data.error || 'Failed to update user password');
+      }
+
+      console.log('Password updated successfully');
+      return data;
+    } catch (error: Error | any) {
+      console.error(error.message);
+      throw new Error(`Error while changing password: ${error.message}`);
+    }
   }
 }

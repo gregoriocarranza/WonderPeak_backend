@@ -25,11 +25,13 @@ export class AuthRouter {
       userMandatory,
       this._authController.logOut.bind(this._authController)
     );
-    this.router.put(
-      '/changeemail',
-      decodeJwtMiddleware,
-      userMandatory,
-      this._authController.changeMail.bind(this._authController)
+    this.router.post(
+      '/forgot_password',
+      this._authController.forgotPassword.bind(this._authController)
+    );
+    this.router.post(
+      '/reset_password',
+      this._authController.resetPassword.bind(this._authController)
     );
   }
 }

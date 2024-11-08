@@ -9,7 +9,7 @@ export class RegisterDTO {
   constructor(data: IRegisterUser | any) {
     this.image = data.image || null;
     this.email = data.email;
-    this.name = data.firstname;
+    this.name = data.name;
     this.lastName = data.lastname || null;
     this.password = data.password;
   }
