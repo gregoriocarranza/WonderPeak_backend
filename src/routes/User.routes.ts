@@ -36,17 +36,45 @@ export class UserRouter {
       userMandatory,
       this._userController.updateMisc.bind(this._userController)
     );
+
+    // Followers
+    this.router.get(
+      '/:userUuid/following',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.getAllFollowing.bind(this._userController)
+    );
+    this.router.get(
+      '/:userUuid/followers',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.getAllFollowers.bind(this._userController)
+    );
     this.router.put(
       '/:userUuid/following',
       decodeJwtMiddleware,
       userMandatory,
       this._userController.followUser.bind(this._userController)
     );
+    this.router.delete(
+      '/:userUuid/followers',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.removeFollower.bind(this._userController)
+    );
+
+    // Favorites
     this.router.put(
       '/:userUuid/favorites',
       decodeJwtMiddleware,
       userMandatory,
       this._userController.favoriteUser.bind(this._userController)
+    );
+    this.router.get(
+      '/:userUuid/favorites',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.getAllFavorites.bind(this._userController)
     );
   }
 }

@@ -219,6 +219,75 @@ export class UserController implements IUserController {
     }
   }
 
+  public async getAllFollowing(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid } = req.params.userUuid ? req.params : req.user;
+      console.log(req.params);
+      const { page, limit } = paginationHelper(req);
+      const newpage: number = page;
+      let newLimit: number = limit;
+      newLimit = newLimit === 0 ? 20 : newLimit;
+      const offset = newpage * newLimit;
+      const is_follower = false;
+      const result: IDataPaginator<IUser> = await this._userService.getAllFollowers(
+        is_follower,
+        userUuid,
+        offset,
+        newLimit,
+      );
+      const usersPromises: Promise<UserDTO>[] =
+        result.data?.map(async (a) => await new UserDTO(a).build()) || [];
+      const usersDTO: UserDTO[] = await Promise.all(usersPromises);
+      res.json({ ...result, ...{ data: usersDTO } });
+    } catch (err: any) {
+      if (err instanceof SqlValidatorError) {
+        req.statusCode = err.statusCode;
+        next(err);
+      } else {
+        console.error(err.message, err.stack);
+        next(new Error('Error getting Users'));
+      }
+    }
+  }
+
+  public async getAllFollowers(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid } = req.params.userUuid ? req.params : req.user;
+      const { page, limit } = paginationHelper(req);
+      const newpage: number = page;
+      let newLimit: number = limit;
+      newLimit = newLimit === 0 ? 20 : newLimit;
+      const is_follower = true;
+      const offset = newpage * newLimit;
+      const result: IDataPaginator<IUser> = await this._userService.getAllFollowers(
+        is_follower,
+        userUuid,
+        offset,
+        newLimit,
+      );
+      const usersPromises: Promise<UserDTO>[] =
+        result.data?.map(async (a) => await new UserDTO(a).build()) || [];
+      const usersDTO: UserDTO[] = await Promise.all(usersPromises);
+      res.json({ ...result, ...{ data: usersDTO } });
+    } catch (err: any) {
+      if (err instanceof SqlValidatorError) {
+        req.statusCode = err.statusCode;
+        next(err);
+      } else {
+        console.error(err.message, err.stack);
+        next(new Error('Error getting Users'));
+      }
+    }
+  }
+
   public async followUser(
     req: IRequestExtendedUser | any,
     res: Response,
@@ -254,6 +323,70 @@ export class UserController implements IUserController {
       }
     } catch (error: any) {
       next(error);
+    }
+  }
+
+  public async removeFollower(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid } = req.user;
+      const { userUuid: followerUuid } = req.params;
+      const inputDto: UuidInputDTO = new UuidInputDTO(userUuid).build();
+      const validation: IInputValidator = await inputValidator(inputDto);
+      if (!validation.success) {
+        return next(await parseError(validation.message, 400));
+      }
+      const followDTO = new FollowerInputDTO({
+        followerUuid,
+        followedUuid: userUuid
+      });
+      await this._userService.removeFollower(followDTO);
+      res.json({
+        success: true,
+      });
+    } catch (err: any) {
+      if (err instanceof SqlValidatorError) {
+        req.statusCode = err.statusCode;
+        next(err);
+      } else {
+        console.error(err.message, err.stack);
+        next(new Error('Error deleting an User'));
+      }
+    }
+  }
+
+  public async getAllFavorites(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid } = req.user;  // not using params because it's a favorite
+      const { page, limit } = paginationHelper(req);
+      const newpage: number = page;
+      let newLimit: number = limit;
+      newLimit = newLimit === 0 ? 20 : newLimit;
+      const offset = newpage * newLimit;
+      const result: IDataPaginator<IUser> = await this._userService.getAllFavorites(
+        userUuid,
+        offset,
+        newLimit,
+      );
+      const usersPromises: Promise<UserDTO>[] =
+        result.data?.map(async (a) => await new UserDTO(a).build()) || [];
+      const usersDTO: UserDTO[] = await Promise.all(usersPromises);
+      res.json({ ...result, ...{ data: usersDTO } });
+    } catch (err: any) {
+      if (err instanceof SqlValidatorError) {
+        req.statusCode = err.statusCode;
+        next(err);
+      } else {
+        console.error(err.message, err.stack);
+        next(new Error('Error getting Users'));
+      }
     }
   }
 

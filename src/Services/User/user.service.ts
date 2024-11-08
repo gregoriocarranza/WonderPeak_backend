@@ -49,6 +49,7 @@ export class UserService {
     return await this._userDAO.delete(uuid);
   }
 
+  // Followers
   public async followUser(followDTO: FollowerInputDTO): Promise<void> {
     return await this._followerDAO.follow(followDTO);
   }
@@ -58,9 +59,23 @@ export class UserService {
   public async isFollowing(followDTO: FollowerInputDTO): Promise<boolean> {
     return await this._followerDAO.isFollowing(followDTO);
   }
+  public async getAllFollowers(is_follower: boolean, userUuid: string, offset: number, limit: number): Promise<IDataPaginator<IUser>> {
+    return await this._followerDAO.getAllFollowers(is_follower, userUuid, offset, limit);
+  }
+  public async getAllFollowing(is_follower: boolean, userUuid: string, offset: number, limit: number): Promise<IDataPaginator<IUser>> {
+    return await this._followerDAO.getAllFollowers(is_follower, userUuid, offset, limit);
+  }
+  public async removeFollower(followDTO: FollowerInputDTO): Promise<void> {
+    return await this._followerDAO.removeFollower(followDTO);
+  }
 
+  // Favorites
   public async favoriteUser(followDTO: FollowerInputDTO): Promise<boolean> {
     return await this._followerDAO.favoriteUser(followDTO);
+  }
+
+  public async getAllFavorites(userUuid: string, offset: number, limit: number): Promise<IDataPaginator<IUser>> {
+    return await this._followerDAO.getAllFavorites(userUuid, offset, limit);
   }
 
   set userDAO(userDAO: UserDAO) {
