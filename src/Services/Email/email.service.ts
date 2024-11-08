@@ -42,7 +42,7 @@ export class EmailService {
     subject: string,
     text: string,
     html: string
-  ): Promise<void> {
+  ): Promise<any> {
     const mailOptions = {
       from: this.EMAIL_USER,
       to,

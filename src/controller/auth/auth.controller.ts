@@ -136,39 +136,41 @@ export class AuthController implements IAuthController {
         return next(await parseError('Error with the email', 500));
       }
       const userExist: IUser | null = await this._userService.getByEmail(email);
-      if (_.isNil(userExist)) {
-        const error: any = new Error('User is not valid for a password change');
-        error.statusCode = 400;
-        return next(error);
+      if (userExist) {
+        const token = jwt.sign(
+          {
+            userUuid: userExist.userUuid,
+            email: userExist.email,
+          },
+          this.SECRET_KEY,
+          { expiresIn: '15m' }
+        );
+        const resetUrl = `${process.env.FRONT_HOST}/reset_password?token=${token}`;
+        const filePath = path.join(
+          __dirname,
+          '..',
+          '..',
+          'Templates',
+          'forgotPassword.html'
+        );
+        const htmlContent = this._emailService.loadTemplate(filePath, {
+          URL_RECUPERACION: resetUrl,
+        });
+        const info = await this._emailService.sendMail(
+          email,
+          'Recupero de contraseña',
+          '',
+          htmlContent
+        );
+        console.info('Correo enviado:', info.response);
       }
-      const token = jwt.sign(
-        {
-          userUuid: userExist.userUuid,
-          email: userExist.email,
-        },
-        this.SECRET_KEY,
-        { expiresIn: '15m' }
-      );
-      const resetUrl = `${process.env.FRONT_HOST}/reset_password?token=${token}`;
-      const filePath = path.join(
-        __dirname,
-        '..',
-        '..',
-        'Templates',
-        'forgotPassword.html'
-      );
-      const htmlContent = this._emailService.loadTemplate(filePath, {
-        URL_RECUPERACION: resetUrl,
-      });
-      const response = await this._emailService.sendMail(
-        email,
-        'Recupero de contraseña',
-        '',
-        htmlContent
-      );
+
       res.status(200).json({
         success: true,
-        data: response,
+        data: {
+          message:
+            'Revisa tu correo electronico que ingresaste! Te enviamos un correo electronico detallando los pasos a seguir',
+        },
       });
     } catch (err) {
       next(err);
