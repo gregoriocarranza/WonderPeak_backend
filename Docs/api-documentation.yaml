@@ -1215,7 +1215,7 @@ paths:
       requestBody:
         required: true
         description: |
-          Create a post with the following fields. Although the data needs to be sent using `multipart/form-data` due to the file upload, below is a JSON representation of the expected data structure:
+          Create a post with the following fields. Although the multimediaFile needs to be sent using base64_encoded due to the file upload, below is a JSON representation of the expected data structure:
 
           ```json
           {
@@ -1226,11 +1226,12 @@ paths:
               "longitude": -3.625,
               "mapsUrl": "https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5"
             },
-            "multimediaFile": "file_content_here"
+            "multimediaFiletype": URL   # Esto puede ser URL | BASE64 
+            "multimediaFile": "encoded_image_here"
           }
           ```
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
               properties:
@@ -1245,10 +1246,12 @@ paths:
                   format: JSON
                   description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
                   example: '{"latitud": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
+                multimediaFiletype:
+                  type: string
+                  description: 'The image file encoded type (can be BASE64 or simply the URL from any host you use).'
                 multimediaFile:
                   type: string
-                  format: binary
-                  description: 'Upload an image file (JPG or PNG, max size 5MB).'
+                  description: 'The image file encoded as a base64 string (e.g., JPG or PNG, max size 5MB).'
       responses:
         '200':
           description: 'Posts created successfully'

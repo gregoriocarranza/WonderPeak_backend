@@ -15,7 +15,7 @@ export class PostInputDTO {
     this.text = data.text;
     this.latitude = data.latitude;
     this.longitude = data.longitude;
-    this.mapsUrl = data.mapsUrl;
+    this.mapsUrl = data.mapsUrl || null;
     this.multimediaUrl = data.multimediaUrl;
   }
 

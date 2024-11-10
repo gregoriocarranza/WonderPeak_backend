@@ -68,7 +68,7 @@ const knexInstance = new KnexConnection().knex;
       if (!tableExists) {
         await knexInstance.schema.createTable('posts', (table) => {
           table.increments('id').primary();
-          table.string('posts_uuid').unique().notNullable();
+          table.string('post_uuid').unique().notNullable();
           table
             .string('user_uuid')
             .references('user_uuid')

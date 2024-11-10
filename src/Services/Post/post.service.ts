@@ -2,22 +2,35 @@ import { PostDAO } from '../../../SQL/dao/post.dao';
 import { PostInputDTO } from '../../../SQL/dto/post/post.input.dto';
 import { IDataPaginator } from '../interfaces/IDataPaginator';
 import { IPost } from '../../../SQL/Interface/IPost';
+import cloudinary from '../../Configurations/Cloudinary';
 
 export class PostService {
   private _postDAO: PostDAO = new PostDAO();
   constructor() {}
 
-  async getFeed(
-    offset: number,
-    limit: number,
-  ): Promise<IDataPaginator<IPost>> {
+  async uploadImageBase64(base64Data: string): Promise<string> {
+    try {
+      const result = await cloudinary.uploader.upload(base64Data, {
+        folder: 'WonderPeak_Posts',
+        use_filename: true,
+        unique_filename: false,
+      });
+      console.log('Imagen subida con éxito:', result.secure_url);
+      return result.secure_url;
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      throw error;
+    }
+  }
+
+  async getFeed(offset: number, limit: number): Promise<IDataPaginator<IPost>> {
     return await this._postDAO.getFeed(offset, limit);
   }
 
   async getAllByUserUuid(
     uuid: string,
     offset: number,
-    limit: number,
+    limit: number
   ): Promise<IDataPaginator<IPost>> {
     return await this._postDAO.getAllByUserUuid(uuid, offset, limit);
   }

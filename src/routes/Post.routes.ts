@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PostController } from '../controller/post/post.controller';
+import { PostController } from '../Controller/post/post.controller';
 import { decodeJwtMiddleware } from '../Middlewares/apiAuth.middleware';
 import { userMandatory } from '../Middlewares/userAuth.middleware';
 

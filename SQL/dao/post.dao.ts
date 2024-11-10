@@ -26,7 +26,7 @@ export class PostDAO implements IPost {
   ): Promise<any> {
     let query: any;
     query = this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .select()
       .options({ nestTables: true, rowMode: 'object' })
       .offset(offset)
@@ -34,7 +34,7 @@ export class PostDAO implements IPost {
 
     const data = await query;
     const count: any = await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .count('post_uuid as total');
     const totalCount: number = count[0]?.total;
 
@@ -60,7 +60,7 @@ export class PostDAO implements IPost {
   ): Promise<any> {
     let query: any;
     query = this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .select()
       .where('user_uuid', userUuid)
       .options({ nestTables: true, rowMode: 'object' })
@@ -69,7 +69,7 @@ export class PostDAO implements IPost {
 
     const data = await query;
     const count: any = await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .count('post_uuid as total');
     const totalCount: number = count[0]?.total;
 
@@ -90,19 +90,19 @@ export class PostDAO implements IPost {
 
   public async getByUuid(postUuid: string): Promise<IPost | null> {
     const data = await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .select()
       .options({ nestTables: true, rowMode: 'object' })
-      .where('post.post_uuid', postUuid)
+      .where('posts.post_uuid', postUuid)
       .first();
     return data ? this.toIPost(data) : null;
   }
 
   public async getById(id: number): Promise<IPost | null> {
     const data = await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .select()
-      .where('post.id', id)
+      .where('posts.id', id)
       .options({ nestTables: true, rowMode: 'object' })
       .first();
     return data ? this.toIPost(data) : null;
@@ -110,14 +110,14 @@ export class PostDAO implements IPost {
 
   public async create(post: PostInputDTO): Promise<IPost | null> {
     const [id] = await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .insert(this.fromIPost(post));
     return this.getById(id);
   }
 
   public async update(post: PostInputDTO): Promise<IPost | null> {
     await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .update(this.fromIPost(post))
       .where('post_uuid', post?.postUuid);
     return post.postUuid ? await this.getByUuid(post?.postUuid) : null;
@@ -125,7 +125,7 @@ export class PostDAO implements IPost {
 
   public async delete(postUuid: string): Promise<void> {
     await this._knexConnection
-      .knex<IPost>('post')
+      .knex<IPost>('posts')
       .where('post_uuid', postUuid)
       .del();
   }
@@ -155,18 +155,18 @@ export class PostDAO implements IPost {
   
   public toIPost(data: any): IPost {
     return {
-      id: data.post.id,
-      userUuid: data.post.user_uuid,
-      postUuid: data.post.post_uuid,
-      title: data.post.title,
-      text: data.post.text,
-      latitude: data.post.latitude,
-      longitude: data.post.longitude,
-      mapsUrl: data.post.mapsUrl,
-      multimediaUrl: data.post.multimedia_url,
-      createdAt: data.post.created_at,
-      commentCount: data.post.comment_count,
-      likesCount: data.post.likes_count,
+      id: data.posts.id,
+      userUuid: data.posts.user_uuid,
+      postUuid: data.posts.post_uuid,
+      title: data.posts.title,
+      text: data.posts.text,
+      latitude: data.posts.latitude,
+      longitude: data.posts.longitude,
+      mapsUrl: data.posts.mapsUrl,
+      multimediaUrl: data.posts.multimedia_url,
+      createdAt: data.posts.created_at,
+      commentCount: data.posts.comment_count,
+      likesCount: data.posts.likes_count,
     };
   }
 
