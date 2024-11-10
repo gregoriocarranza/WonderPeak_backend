@@ -1,4 +1,6 @@
 export class PostInputDTO {
+  userUuid: string | null;
+  postUuid: string | null;
   title: string | null;
   text: string | null;
   latitude: number | null;
@@ -7,6 +9,8 @@ export class PostInputDTO {
   multimediaUrl: string | null;
 
   constructor(data: any) {
+    this.userUuid = data.userUuid;
+    this.postUuid = data.postUuid;
     this.title = data.title;
     this.text = data.text;
     this.latitude = data.latitude;

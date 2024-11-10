@@ -14,7 +14,11 @@ export class PostService {
     return await this._postDAO.getFeed(offset, limit);
   }
 
-  async getAllByUserUuid(uuid: string): Promise<IPost[] | null> {
+  async getAllByUserUuid(
+    uuid: string,
+    offset: number,
+    limit: number,
+  ): Promise<IDataPaginator<IPost>> {
     return await this._postDAO.getAllByUserUuid(uuid, offset, limit);
   }
 

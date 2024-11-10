@@ -10,7 +10,7 @@ import { IDataPaginator } from '../../Services/interfaces/IDataPaginator';
 import { inputValidator } from '../../utils/inputValidator';
 import { paginationHelper } from '../../utils/pagination.helper';
 import { parseError } from '../../utils/parseError';
-import { IInputValidator, IRequestExtended } from '../../utils/types';
+import { IInputValidator } from '../../utils/types';
 import { IPostController } from './post.controller.interface';
 import { NextFunction, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -57,23 +57,28 @@ export class PostController implements IPostController {
     ): Promise<void> {
       try {
         const { userUuid } = req.params;
-        const inputDto: UuidInputDTO = new UuidInputDTO(userUuid).build();
-        const validation: IInputValidator = await inputValidator(inputDto);
-        if (!validation.success) {
-          return next(await parseError(validation.message, 400));
-        }
-        const posts: IPost[] | null = await this._postService.getAllByUserUuid(userUuid);
-        if (!posts) {
-          return next(await parseError('Posts not found', 404));
-        }
-        const postsPromises: Promise<PostDTO>[] = posts.map(async (a) => await new PostDTO(a).build());
+        const { page, limit } = paginationHelper(req);
+        const newpage: number = page;
+        let newLimit: number = limit;
+        newLimit = newLimit === 0 ? 20 : newLimit;
+        const offset = newpage * newLimit;
+        const result: IDataPaginator<IPost> = await this._postService.getAllByUserUuid(
+          userUuid,
+          offset,
+          newLimit,
+        );
+        const postsPromises: Promise<PostDTO>[] =
+          result.data?.map(async (a) => await new PostDTO(a).build()) || [];
         const postsDTO: PostDTO[] = await Promise.all(postsPromises);
-        res.status(200).json({
-          success: true,
-          data: postsDTO,
-        });
+        res.json({ ...result, ...{ data: postsDTO } });
       } catch (err: any) {
-        next(err);
+        if (err instanceof SqlValidatorError) {
+          req.statusCode = err.statusCode;
+          next(err);
+        } else {
+          console.error(err.message, err.stack);
+          next(new Error('Error getting Feed'));
+        }
       }
     }
 
@@ -104,12 +109,13 @@ export class PostController implements IPostController {
   }
 
   public async create(
-    req: IRequestExtended,
+    req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     const postInputDTO: PostInputDTO = new PostInputDTO({
       postUuid: uuidv4(),
+      userUuid: req.user.userUuid,
       ...req.body,
     }).build();
 

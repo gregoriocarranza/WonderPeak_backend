@@ -1,7 +1,6 @@
 import { KnexConnection } from '../Connection';
 import { IPost } from '../Interface/IPost';
 import { PostInputDTO } from '../dto/post/post.input.dto';
-import { IUser } from '../Interface/IUser';
 
 export class PostDAO implements IPost {
   private _knexConnection: KnexConnection = new KnexConnection();
@@ -12,6 +11,12 @@ export class PostDAO implements IPost {
   public image!: string;
   public createdAt!: Date;
   public updatedAt!: Date;
+  public commentCount!: number;
+  public likesCount!: number;
+  public latitude!: number;
+  public longitude!: number;
+  public mapsUrl!: string;
+  public multimediaUrl!: string;
 
   constructor() {}
 
@@ -29,20 +34,20 @@ export class PostDAO implements IPost {
 
     const data = await query;
     const count: any = await this._knexConnection
-      .knex<IUser>('user')
-      .count('user_uuid as total');
+      .knex<IPost>('post')
+      .count('post_uuid as total');
     const totalCount: number = count[0]?.total;
 
-    const users: IUser[] = data.map((d: any) => this.toIUser(d));
+    const posts: IPost[] = data.map((d: any) => this.toIPost(d));
     const page: number = offset === 0 ? offset : offset / limit;
     const totalPages: number = Math.ceil(totalCount / limit);
 
     return {
       success: true,
-      data: users,
+      data: posts,
       page,
       limit,
-      count: users.length,
+      count: posts.length,
       totalCount,
       totalPages,
     };
@@ -52,7 +57,7 @@ export class PostDAO implements IPost {
     userUuid: string,
     offset: number = 0,
     limit: number = 20,
-  ): Promise<IPost[] | null> {
+  ): Promise<any> {
     let query: any;
     query = this._knexConnection
       .knex<IPost>('post')
@@ -64,46 +69,56 @@ export class PostDAO implements IPost {
 
     const data = await query;
     const count: any = await this._knexConnection
-      .knex<IUser>('user')
-      .count('user_uuid as total');
+      .knex<IPost>('post')
+      .count('post_uuid as total');
     const totalCount: number = count[0]?.total;
 
-    const users: IUser[] = data.map((d: any) => this.toIUser(d));
+    const posts: IPost[] = data.map((d: any) => this.toIPost(d));
     const page: number = offset === 0 ? offset : offset / limit;
     const totalPages: number = Math.ceil(totalCount / limit);
 
     return {
       success: true,
-      data: users,
+      data: posts,
       page,
       limit,
-      count: users.length,
+      count: posts.length,
       totalCount,
       totalPages,
     };
   }
 
-  public async getByUuid(userUuid: string): Promise<IUser | null> {
+  public async getByUuid(postUuid: string): Promise<IPost | null> {
     const data = await this._knexConnection
-      .knex<IUser>('user')
+      .knex<IPost>('post')
       .select()
       .options({ nestTables: true, rowMode: 'object' })
-      .where('user.user_uuid', userUuid)
+      .where('post.post_uuid', postUuid)
       .first();
-    return data ? this.toIUser(data) : null;
+    return data ? this.toIPost(data) : null;
+  }
+
+  public async getById(id: number): Promise<IPost | null> {
+    const data = await this._knexConnection
+      .knex<IPost>('post')
+      .select()
+      .where('post.id', id)
+      .options({ nestTables: true, rowMode: 'object' })
+      .first();
+    return data ? this.toIPost(data) : null;
   }
 
   public async create(post: PostInputDTO): Promise<IPost | null> {
     const [id] = await this._knexConnection
       .knex<IPost>('post')
-      .insert(this.fromIUser(user));
+      .insert(this.fromIPost(post));
     return this.getById(id);
   }
 
   public async update(post: PostInputDTO): Promise<IPost | null> {
     await this._knexConnection
       .knex<IPost>('post')
-      .update(this.fromIUser(user))
+      .update(this.fromIPost(post))
       .where('post_uuid', post?.postUuid);
     return post.postUuid ? await this.getByUuid(post?.postUuid) : null;
   }
@@ -116,47 +131,42 @@ export class PostDAO implements IPost {
   }
 
   public async favorite(postDTO: PostInputDTO): Promise<boolean> {
-    const data = await this._knexConnection
-      .knex('follower')
-      .update({
-        updated_at: this._knexConnection.knex.fn.now(),
-        favorite: this._knexConnection.knex.raw('NOT favorite')
-      })
-      .where({
-        follower_uuid: followDTO.userFollowerUuid,
-        followed_uuid: followDTO.userFollowedUuid
-      })
-      .returning('favorite');
-    return !!data;
+    // TODO: Implement favorite
+    return true;
   }
 
   public async like(postDTO: PostInputDTO): Promise<boolean> {
-    const data = await this._knexConnection
-      .knex('follower')
-      .update({
-        updated_at: this._knexConnection.knex.fn.now(),
-        favorite: this._knexConnection.knex.raw('NOT favorite')
-      })
-      .where({
-        follower_uuid: followDTO.userFollowerUuid,
-        followed_uuid: followDTO.userFollowedUuid
-      })
-      .returning('favorite');
-    return !!data;
+    // TODO: Implement like
+    return true;
   }
 
+  private fromIPost(post: PostInputDTO): any {
+    return {
+      user_uuid: post?.userUuid,
+      post_uuid: post?.postUuid,
+      title: post?.title,
+      text: post?.text,
+      latitude: post?.latitude,
+      longitude: post?.longitude,
+      mapsUrl: post?.mapsUrl,
+      multimedia_url: post?.multimediaUrl,
+    };
+  }
+  
   public toIPost(data: any): IPost {
     return {
       id: data.post.id,
+      userUuid: data.post.user_uuid,
       postUuid: data.post.post_uuid,
       title: data.post.title,
       text: data.post.text,
       latitude: data.post.latitude,
       longitude: data.post.longitude,
-      mapsUrl: data.post.maps_url,
+      mapsUrl: data.post.mapsUrl,
       multimediaUrl: data.post.multimedia_url,
       createdAt: data.post.created_at,
-      updatedAt: data.post.updated_at,
+      commentCount: data.post.comment_count,
+      likesCount: data.post.likes_count,
     };
   }
 
