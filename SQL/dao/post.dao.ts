@@ -16,30 +16,16 @@ export class PostDAO implements IPost {
   constructor() {}
 
   public async getFeed(
-    userUuid: string,
     offset: number = 0,
     limit: number = 20,
   ): Promise<any> {
     let query: any;
-    if (is_follower) {
-      query = this._knexConnection
-      .knex<IUser>('follower')
+    query = this._knexConnection
+      .knex<IPost>('post')
       .select()
-      .join('user', 'user.user_uuid', '=', 'follower.follower_uuid')
-      .where('follower.followed_uuid', userUuid)
       .options({ nestTables: true, rowMode: 'object' })
       .offset(offset)
       .limit(limit);
-    } else {
-      query = this._knexConnection
-        .knex<IUser>('follower')
-        .select()
-        .join('user', 'user.user_uuid', '=', 'follower.followed_uuid')
-        .where('follower.follower_uuid', userUuid)
-        .options({ nestTables: true, rowMode: 'object' })
-        .offset(offset)
-        .limit(limit);
-    }
 
     const data = await query;
     const count: any = await this._knexConnection
@@ -62,14 +48,39 @@ export class PostDAO implements IPost {
     };
   }
 
-  public async getAllByUserUuid(userUuid: string): Promise<IPost[] | null> {
-    const data = await this._knexConnection
+  public async getAllByUserUuid(
+    userUuid: string,
+    offset: number = 0,
+    limit: number = 20,
+  ): Promise<IPost[] | null> {
+    let query: any;
+    query = this._knexConnection
       .knex<IPost>('post')
       .select()
+      .where('user_uuid', userUuid)
       .options({ nestTables: true, rowMode: 'object' })
-      .where('user.user_uuid', userUuid)
-      .first();
-    return data ? this.toIPost(data) : null;
+      .offset(offset)
+      .limit(limit);
+
+    const data = await query;
+    const count: any = await this._knexConnection
+      .knex<IUser>('user')
+      .count('user_uuid as total');
+    const totalCount: number = count[0]?.total;
+
+    const users: IUser[] = data.map((d: any) => this.toIUser(d));
+    const page: number = offset === 0 ? offset : offset / limit;
+    const totalPages: number = Math.ceil(totalCount / limit);
+
+    return {
+      success: true,
+      data: users,
+      page,
+      limit,
+      count: users.length,
+      totalCount,
+      totalPages,
+    };
   }
 
   public async getByUuid(userUuid: string): Promise<IUser | null> {

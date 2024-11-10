@@ -2,8 +2,8 @@ import { NextFunction, Response } from 'express';
 import { ICrudController } from '../ICRUDController';
 import { IRequestExtendedUser } from '../../Middlewares/interfaces/user.middleware.interfaces';
 
-export interface IUserController extends ICrudController {
-  getFeed(
+export interface IPostController extends ICrudController {
+  getAll(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction

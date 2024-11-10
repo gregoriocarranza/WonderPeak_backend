@@ -22,7 +22,7 @@ export class PostRouter {
       '/feed',
       decodeJwtMiddleware,
       userMandatory,
-      this._postController.getFeed.bind(this._postController)
+      this._postController.getAll.bind(this._postController)
     );
     this.router.get(
       '/:postUuid',

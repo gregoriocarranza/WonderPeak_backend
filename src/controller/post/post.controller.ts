@@ -4,7 +4,7 @@ import { IPost } from '../../../SQL/Interface/IPost';
 import { PostService } from '../../Services/Post/post.service';
 import { UuidInputDTO } from '../../dto/input/uuid.input.dto';
 import { PostDTO } from '../../dto/post/post.dto';
-import { UserMiscUpdateInputDTO } from '../../dto/user/user.misc.update.dto';
+import { PostUpdateDTO } from '../../dto/post/post.update.dto';
 import { IRequestExtendedUser } from '../../Middlewares/interfaces/user.middleware.interfaces';
 import { IDataPaginator } from '../../Services/interfaces/IDataPaginator';
 import { inputValidator } from '../../utils/inputValidator';
@@ -20,7 +20,7 @@ export class PostController implements IPostController {
 
   constructor() {}
 
-  public async getFeed(
+  public async getAll(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
@@ -128,8 +128,8 @@ export class PostController implements IPostController {
   ): Promise<void> {
     try {
       const { postUuid } = req.params;
-      const postUpdateInputDTO: PostUpdateInputDTO =
-        new PostUpdateInputDTO({
+      const postUpdateInputDTO: PostUpdateDTO =
+        new PostUpdateDTO({
           ...req.body,
         }).build();
       const validation: IInputValidator = await inputValidator(
@@ -194,31 +194,10 @@ export class PostController implements IPostController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid: followerUuid }= req.user
-      const { userUuid: followedUuid } = req.params;
-
-      if (followerUuid === followedUuid) {
-        throw new Error('Cannot favorite yourself');
-      }
-
-      const favoriteDTO = new FollowerInputDTO({
-        followerUuid,
-        followedUuid,
+      res.status(200).json({
+        success: true,
+        message: 'Not implemented yet'
       });
-
-      const isFavorite = await this._userService.favoriteUser(favoriteDTO);
-
-      if (isFavorite) {
-        res.status(200).json({
-          success: true,
-          message: 'Successfully add user to favorites'
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: 'Successfully remove user from favorites'
-        });
-      }
     } catch (error: any) {
       next(error);
     }
@@ -230,31 +209,10 @@ export class PostController implements IPostController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid: followerUuid }= req.user
-      const { userUuid: followedUuid } = req.params;
-
-      if (followerUuid === followedUuid) {
-        throw new Error('Cannot favorite yourself');
-      }
-
-      const favoriteDTO = new FollowerInputDTO({
-        followerUuid,
-        followedUuid,
+      res.status(200).json({
+        success: true,
+        message: 'Not implemented yet'
       });
-
-      const isFavorite = await this._userService.favoriteUser(favoriteDTO);
-
-      if (isFavorite) {
-        res.status(200).json({
-          success: true,
-          message: 'Successfully add user to favorites'
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: 'Successfully remove user from favorites'
-        });
-      }
     } catch (error: any) {
       next(error);
     }

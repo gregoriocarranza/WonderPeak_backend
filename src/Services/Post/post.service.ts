@@ -14,12 +14,12 @@ export class PostService {
     return await this._postDAO.getFeed(offset, limit);
   }
 
-  async getByUuid(uuid: string): Promise<IPost | null> {
-    return await this._postDAO.getByUuid(uuid);
+  async getAllByUserUuid(uuid: string): Promise<IPost[] | null> {
+    return await this._postDAO.getAllByUserUuid(uuid, offset, limit);
   }
 
-  async getAllByUserUuid(uuid: string): Promise<IPost[] | null> {
-    return await this._postDAO.getAllByUserUuid(uuid);
+  async getByUuid(uuid: string): Promise<IPost | null> {
+    return await this._postDAO.getByUuid(uuid);
   }
 
   async create(post: PostInputDTO | any): Promise<IPost | null> {
