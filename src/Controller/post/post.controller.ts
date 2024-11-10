@@ -4,7 +4,6 @@ import { IPost } from '../../../SQL/Interface/IPost';
 import { PostService } from '../../Services/Post/post.service';
 import { UuidInputDTO } from '../../dto/input/uuid.input.dto';
 import { PostDTO } from '../../dto/post/post.dto';
-import { PostUpdateDTO } from '../../dto/post/post.update.dto';
 import { IRequestExtendedUser } from '../../Middlewares/interfaces/user.middleware.interfaces';
 import { IDataPaginator } from '../../Services/interfaces/IDataPaginator';
 import { inputValidator } from '../../utils/inputValidator';
@@ -14,6 +13,7 @@ import { IInputValidator } from '../../utils/types';
 import { NextFunction, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { IPostController } from './post.controller.interface';
+import { PostMiscUpdateInputDTO } from '../../dto/post/post.misc.update.dto';
 // import fs from 'fs';
 
 export class PostController implements IPostController {
@@ -162,14 +162,15 @@ export class PostController implements IPostController {
     });
   }
 
-  public async update(
+  public async updateMiscs(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
+      const { userUuid } = req.user;
       const { postUuid } = req.params;
-      const postUpdateInputDTO: PostUpdateDTO = new PostUpdateDTO({
+      const postUpdateInputDTO: PostMiscUpdateInputDTO = new PostMiscUpdateInputDTO({
         ...req.body,
       }).build();
       const validation: IInputValidator =
@@ -177,12 +178,19 @@ export class PostController implements IPostController {
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
       }
+      const postData: IPost | null =
+        await this._postService.getByUuid(postUuid);
+      if (!postData) {
+        return next(await parseError('Post not found', 404));
+      }
+      if (userUuid != postData.userUuid) {
+        return next(
+          await parseError('User not authorized to do this action', 401)
+        );
+      }
       Object.assign(postUpdateInputDTO, { postUuid });
       const post: IPost | null =
         await this._postService.update(postUpdateInputDTO);
-      if (!post) {
-        return next(await parseError('Post not found', 404));
-      }
       const postDTO: PostDTO = await new PostDTO(post).build();
       res.json({
         success: true,

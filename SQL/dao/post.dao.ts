@@ -1,29 +1,46 @@
 import { KnexConnection } from '../Connection';
-import { IPost } from '../Interface/IPost';
+import { IPost, IPostDAO } from '../Interface/IPost';
 import { PostInputDTO } from '../dto/post/post.input.dto';
 
-export class PostDAO implements IPost {
+export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
   private _knexConnection: KnexConnection = new KnexConnection();
-  public postUuid!: string;
-  public userUuid!: string;
-  public title!: string;
-  public text!: string;
-  public image!: string;
-  public createdAt!: Date;
-  public updatedAt!: Date;
-  public commentCount!: number;
-  public likesCount!: number;
-  public latitude!: number;
-  public longitude!: number;
-  public mapsUrl!: string;
-  public multimediaUrl!: string;
-
   constructor() {}
 
-  public async getFeed(
-    offset: number = 0,
-    limit: number = 20,
-  ): Promise<any> {
+  /**
+   * @deprecated use getFeed inted
+   */
+
+  public async getAll(offset: number = 0, limit: number = 20): Promise<any> {
+    let query: any;
+    query = this._knexConnection
+      .knex<IPost>('posts')
+      .select()
+      .options({ nestTables: true, rowMode: 'object' })
+      .offset(offset)
+      .limit(limit);
+
+    const data = await query;
+    const count: any = await this._knexConnection
+      .knex<IPost>('posts')
+      .count('post_uuid as total');
+    const totalCount: number = count[0]?.total;
+
+    const posts: IPost[] = data.map((d: any) => this.toIPost(d));
+    const page: number = offset === 0 ? offset : offset / limit;
+    const totalPages: number = Math.ceil(totalCount / limit);
+
+    return {
+      success: true,
+      data: posts,
+      page,
+      limit,
+      count: posts.length,
+      totalCount,
+      totalPages,
+    };
+  }
+
+  public async getFeed(offset: number = 0, limit: number = 20): Promise<any> {
     let query: any;
     query = this._knexConnection
       .knex<IPost>('posts')
@@ -56,7 +73,7 @@ export class PostDAO implements IPost {
   public async getAllByUserUuid(
     userUuid: string,
     offset: number = 0,
-    limit: number = 20,
+    limit: number = 20
   ): Promise<any> {
     let query: any;
     query = this._knexConnection
@@ -152,7 +169,7 @@ export class PostDAO implements IPost {
       multimedia_url: post?.multimediaUrl,
     };
   }
-  
+
   public toIPost(data: any): IPost {
     return {
       id: data.posts.id,
@@ -165,6 +182,7 @@ export class PostDAO implements IPost {
       mapsUrl: data.posts.mapsUrl,
       multimediaUrl: data.posts.multimedia_url,
       createdAt: data.posts.created_at,
+      updateAt: data.posts.updated_at,
       commentCount: data.posts.comment_count,
       likesCount: data.posts.likes_count,
     };

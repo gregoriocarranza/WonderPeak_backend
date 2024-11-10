@@ -114,7 +114,7 @@ components:
           type: object
           description: 'The geographic location related to the post.'
           properties:
-            latitud:
+            latitude:
               type: integer
               description: 'Latitude of the location.'
               example: 17.562
@@ -1245,7 +1245,7 @@ paths:
                   type: string
                   format: JSON
                   description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
-                  example: '{"latitud": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
+                  example: '{"latitude": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
                 multimediaFiletype:
                   type: string
                   description: 'The image file encoded type (can be BASE64 or simply the URL from any host you use).'
@@ -1420,7 +1420,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Post'
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                  example: 'Nature Adventures'
+                text:
+                  type: string
+                  nullable: true
+                  example: 'Exploring the vast forests!'
+                latitude:
+                  type: integer
+                  description: 'Latitude of the location.'
+                  example: 17.562
+                longitude:
+                  type: integer
+                  description: 'Longitude of the location.'
+                  example: -3.625
+                mapsUrl:
+                  type: string
+                  description: 'URL to view the location on Google Maps.'
+                  example: 'https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5'
+                image:
+                  type: string
+                  nullable: true
+                  example: 'https://example.com/image.jpg'
       responses:
         '200':
           description: 'Post updated successfully'

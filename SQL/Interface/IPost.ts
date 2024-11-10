@@ -1,3 +1,5 @@
+import { IBaseDAO } from './IBaseDAO';
+
 export interface IPost {
   id?: number;
   postUuid: string;
@@ -11,4 +13,9 @@ export interface IPost {
   commentCount: number;
   likesCount: number;
   createdAt: Date;
+  updateAt: Date;
+}
+
+export interface IPostDAO<I, O> extends IBaseDAO<I, O> {
+  getFeed: (offset: number, limit: number) => Promise<any>;
 }

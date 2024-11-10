@@ -3,6 +3,11 @@ import { IRequestExtendedUser } from '../../Middlewares/interfaces/user.middlewa
 import { ICrudController } from '../ICRUDController';
 
 export interface IPostController extends ICrudController {
+  updateMiscs(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
   getAllByUserUuid(
     req: IRequestExtendedUser | any,
     res: Response,

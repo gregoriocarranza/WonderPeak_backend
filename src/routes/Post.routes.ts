@@ -40,7 +40,7 @@ export class PostRouter {
       '/:postUuid',
       decodeJwtMiddleware,
       userMandatory,
-        this._postController.update.bind(this._postController)
+        this._postController.updateMiscs.bind(this._postController)
     );
     this.router.delete(
       '/:postUuid',
