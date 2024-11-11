@@ -8,7 +8,7 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
   constructor() {}
 
   /**
-   * @deprecated use searchAll
+   * @deprecated use searchAll insted
    */
   public async getAll(offset: number = 0, limit: number = 20): Promise<any> {
     const data = await this._knexConnection
@@ -179,7 +179,6 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
       active: data.user.active,
     };
   }
-
 
   set knexConnection(knexConnection: KnexConnection) {
     this._knexConnection = knexConnection;

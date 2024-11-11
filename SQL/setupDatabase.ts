@@ -64,31 +64,83 @@ const knexInstance = new KnexConnection().knex;
 
     //----------- Tabla de posteos  -----------
 
-      tableExists = await knexInstance.schema.hasTable('posts');
-      if (!tableExists) {
-        await knexInstance.schema.createTable('posts', (table) => {
-          table.increments('id').primary();
-          table.string('posts_uuid').unique().notNullable();
-          table
-            .string('user_uuid')
-            .references('user_uuid')
-            .inTable('user')
-            .onDelete('CASCADE')
-            .withKeyName('fk_user_post');
-          table.string('title').notNullable();
-          table.text('text').defaultTo('');
-          table.float('latitude').defaultTo(null);
-          table.float('longitude').defaultTo(null);
-          table.text('mapsUrl').defaultTo(null);
-          table.text('multimedia_url').defaultTo(null);
-          table.integer('comment_count').defaultTo(0);
-          table.integer('likes_count').defaultTo(0);
-          table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+    tableExists = await knexInstance.schema.hasTable('posts');
+    if (!tableExists) {
+      await knexInstance.schema.createTable('posts', (table) => {
+        table.increments('id').primary();
+        table.string('post_uuid').unique().notNullable();
+        table
+          .string('user_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_user_post');
+        table.string('title').notNullable();
+        table.text('text').defaultTo('');
+        table.float('latitude').defaultTo(null);
+        table.float('longitude').defaultTo(null);
+        table.text('mapsUrl').defaultTo(null);
+        table.text('multimedia_url').defaultTo(null);
+        table.integer('comment_count').defaultTo(0);
+        table.integer('likes_count').defaultTo(0);
+        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
         table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
       });
       console.log('Table posts created successfully.');
     } else {
       console.log('Table posts already exists.');
+    }
+
+    //----------- Tabla de Likes  -----------
+
+    tableExists = await knexInstance.schema.hasTable('likes');
+    if (!tableExists) {
+      await knexInstance.schema.createTable('likes', (table) => {
+        table.increments('id').primary();
+        table
+          .string('user_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_likes_user');
+        table
+          .string('post_uuid')
+          .references('post_uuid')
+          .inTable('posts')
+          .onDelete('CASCADE')
+          .withKeyName('fk_likes_post');
+        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+        table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
+      });
+      console.log('likes table created successfully.');
+    } else {
+      console.log('Table likes already exists.');
+    }
+
+    //----------- Tabla de Favorites  -----------
+
+    tableExists = await knexInstance.schema.hasTable('favorites');
+    if (!tableExists) {
+      await knexInstance.schema.createTable('favorites', (table) => {
+        table.increments('id').primary();
+        table
+          .string('user_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_favorites_user');
+        table
+          .string('post_uuid')
+          .references('post_uuid')
+          .inTable('posts')
+          .onDelete('CASCADE')
+          .withKeyName('fk_favorites_post');
+        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+        table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
+      });
+      console.log('favorites table created successfully.');
+    } else {
+      console.log('Table favorites already exists.');
     }
   } catch (error) {
     console.error('Error managing the tables:', error);

@@ -12,7 +12,7 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import { AuthRouter } from './Routes/Auth.routes';
 import { UserRouter } from './Routes/User.routes';
-
+import { PostRouter } from './Routes/Post.routes';
 dotenv.config();
 
 const app: Application = express();
@@ -30,8 +30,8 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 if (process.env.ENVIRONMENT != 'production') {
   app.use(morgan('tiny'));
@@ -43,6 +43,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/health', new HealthRouter().router);
 app.use('/api/auth', new AuthRouter().router);
 app.use('/api/users', new UserRouter().router);
+app.use('/api/posts', new PostRouter().router);
 
 app.use(errorMiddleware);
 
