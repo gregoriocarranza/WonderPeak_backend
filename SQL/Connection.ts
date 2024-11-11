@@ -8,14 +8,15 @@ export class KnexConnection {
       return KnexConnection.instance;
     }
     const config: Knex.Config = {
-      client: 'mysql',
+      client: process.env.SQL_CLIENT,
       connection: {
         host: process.env.SQL_HOST,
         user: process.env.SQL_USER,
         password: process.env.SQL_PASSWORD,
         database: process.env.SQL_DB_NAME,
         charset: 'utf8mb4',
-        port: 3306,
+        // @ts-ignore
+        port: process.env.SQL_DB_PORT || 3306,
       },
       pool: {
         min: 0,
