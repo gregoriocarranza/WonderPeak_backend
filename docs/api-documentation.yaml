@@ -135,7 +135,7 @@ components:
         likesCount:
           type: integer
           example: 120
-        creationDate:
+        createdAt:
           type: string
           format: date-time
           example: '2021-07-16T19:20:30Z'
@@ -1703,7 +1703,7 @@ paths:
 
   #------------------------ comments Routes ------------------------#
 
-  /comments/{postUuid}:
+  /comments/post/{postUuid}:
     get:
       tags:
         - 'Comments'
