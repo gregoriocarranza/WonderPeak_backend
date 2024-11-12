@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { IPostController } from './post.controller.interface';
 import { PostMiscUpdateInputDTO } from '../../dto/post/post.misc.update.dto';
 import { AdService } from '../../Services/Ad/ad.service';
+import { AdsDTO } from '../../dto/post/ads.dto';
 // import fs from 'fs';
 
 export class PostController implements IPostController {
@@ -38,21 +39,33 @@ export class PostController implements IPostController {
         offset,
         newLimit
       );
-      
+
       const postsPromises: Promise<PostDTO>[] =
         result.data?.map(async (a) => await new PostDTO(a).build()) || [];
       const postsDTO: PostDTO[] = await Promise.all(postsPromises);
 
       // Fetch ads
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+
       const ads = await this._adService.getAds();
+
+      const adsPromises: Promise<AdsDTO>[] =
+        ads
+          .filter(
+            (a) =>
+              a.date.start <= currentTimestamp && a.date.end >= currentTimestamp
+          )
+          .map(async (a) => await new AdsDTO(a).build()) || [];
+
+      const adsDTO: AdsDTO[] = await Promise.all(adsPromises);
 
       // Mix posts and ads
       const mixedContent = [];
       let adIndex = 0;
       for (let i = 0; i < postsDTO.length; i++) {
         mixedContent.push(postsDTO[i]);
-        if ((i + 1) % 3 === 0 && adIndex < ads.length) {
-          mixedContent.push(ads[adIndex]);
+        if ((i + 1) % 3 === 0 && adIndex < adsDTO.length) {
+          mixedContent.push(adsDTO[adIndex]);
           adIndex++;
         }
       }
@@ -188,9 +201,10 @@ export class PostController implements IPostController {
     try {
       const { userUuid } = req.user;
       const { postUuid } = req.params;
-      const postUpdateInputDTO: PostMiscUpdateInputDTO = new PostMiscUpdateInputDTO({
-        ...req.body,
-      }).build();
+      const postUpdateInputDTO: PostMiscUpdateInputDTO =
+        new PostMiscUpdateInputDTO({
+          ...req.body,
+        }).build();
       const validation: IInputValidator =
         await inputValidator(postUpdateInputDTO);
       if (!validation.success) {

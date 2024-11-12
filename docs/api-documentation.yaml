@@ -139,43 +139,43 @@ components:
           type: string
           format: date-time
           example: '2021-07-16T19:20:30Z'
-
     Ad:
       type: object
       properties:
-        adUuid:
-          type: string
-          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
-        ownerUser:
-          $ref: '#/components/schemas/ShortUserData'
-        companyName:
+        commerceName:
           type: string
           example: 'Adventure Works'
-          description: 'Name of the company.'
-        companyUrl:
+          description: 'Name of the commerce.'
+        commerceUrl:
           type: string
           example: 'https://adventure-works.com'
-          description: 'Website URL of the company.'
-        image:
+          description: 'URL of the commerce website.'
+        commerceImage:
           type: string
-          example: 'https://example.com/image.jpg'
-          description: 'URL of the ad image.'
-        likesCount:
-          type: integer
-          example: 120
-          description: 'Number of likes the ad has received.'
-        commentsCount:
-          type: integer
-          example: 30
-          description: 'Number of comments on the ad.'
+          example: 'https://example.com/commerce-image.jpg'
+          description: 'URL of the commerce image.'
+        multimediaUrl:
+          type: string
+          example: 'https://example.com/multimedia-portrait.jpg'
+          description: 'URL of the multimedia content in portrait orientation.'
+        title:
+          type: string
+          example: 'Exciting New Adventure Awaits!'
+          description: 'Title of the advertisement.'
+        text:
+          type: string
+          example: 'Join us for an unforgettable adventure at Adventure Works.'
+          description: 'Text content of the advertisement.'
         startDate:
-          type: integer
-          example: 1640995200
-          description: 'Start date of the ad display in Unix timestamp.'
+          type: string
+          format: date-time
+          example: '2023-01-01T12:00:00Z'
+          description: 'Start date of the ad display in a human-readable format (ISO 8601).'
         endDate:
-          type: integer
-          example: 1643673599
-          description: 'End date of the ad display in Unix timestamp.'
+          type: string
+          format: date-time
+          example: '2023-01-01T12:00:00Z'
+          description: 'End date of the ad display in a human-readable format (ISO 8601).'
     Comment:
       type: object
       properties:
