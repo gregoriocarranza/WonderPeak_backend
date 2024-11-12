@@ -11,5 +11,9 @@ export interface IComment {
 }
 
 export interface ICommentDAO<I, O> extends IBaseDAO<I, O> {
-  getAll: (postUuid: string, offset: number, limit: number) => Promise<any>;
+  getAllByPost: (
+    postUuid: string,
+    offset: number,
+    limit: number
+  ) => Promise<any>;
 }
