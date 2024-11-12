@@ -91,6 +91,33 @@ const knexInstance = new KnexConnection().knex;
       console.log('Table posts already exists.');
     }
 
+    //----------- Tabla de comentarios  -----------
+    tableExists = await knexInstance.schema.hasTable('comments');
+    if (!tableExists) {
+      await knexInstance.schema.createTable('comments', (table) => {
+        table.increments('id').primary();
+        table.string('comment_uuid').unique().notNullable();
+        table
+          .string('user_uuid')
+          .references('user_uuid')
+          .inTable('user')
+          .onDelete('CASCADE')
+          .withKeyName('fk_comments_user');
+        table
+          .string('post_uuid')
+          .references('post_uuid')
+          .inTable('posts')
+          .onDelete('CASCADE')
+          .withKeyName('fk_comments_post');
+        table.text('text').notNullable();
+        table.timestamp('created_at').defaultTo(knexInstance.fn.now());
+        table.timestamp('updated_at').defaultTo(knexInstance.fn.now());
+      });
+      console.log('Table comments created successfully.');
+    } else {
+      console.log('Table comments already exists.');
+    }
+
     //----------- Tabla de Likes  -----------
 
     tableExists = await knexInstance.schema.hasTable('likes');

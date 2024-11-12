@@ -13,6 +13,8 @@ import yaml from 'js-yaml';
 import { AuthRouter } from './Routes/Auth.routes';
 import { UserRouter } from './Routes/User.routes';
 import { PostRouter } from './Routes/Post.routes';
+import { CommentRouter } from './Routes/Comment.routes';
+
 dotenv.config();
 
 const app: Application = express();
@@ -44,6 +46,7 @@ app.use('/api/health', new HealthRouter().router);
 app.use('/api/auth', new AuthRouter().router);
 app.use('/api/users', new UserRouter().router);
 app.use('/api/posts', new PostRouter().router);
+app.use('/api/comments', new CommentRouter().router);
 
 app.use(errorMiddleware);
 

@@ -11,7 +11,7 @@ export class PostDTO {
   multimediaUrl: string | null;
   commentsCount: number | null;
   likesCount: number | null;
-  creationDate: Date | null;
+  createdAt: Date | null;
   updatedAt: Date | null;
 
   constructor(data: any) {
@@ -27,7 +27,7 @@ export class PostDTO {
     this.multimediaUrl = data.multimediaUrl || null;
     this.commentsCount = data.commentCount || null;
     this.likesCount = data.likesCount || null;
-    this.creationDate = data.createdAt ? new Date(data.createdAt) : null;
+    this.createdAt = data.createdAt ? new Date(data.createdAt) : null;
     this.updatedAt = data.updated_at ? new Date(data.updated_at) : null;
   }
 
