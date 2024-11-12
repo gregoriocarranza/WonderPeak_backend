@@ -14,10 +14,12 @@ import { NextFunction, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { IPostController } from './post.controller.interface';
 import { PostMiscUpdateInputDTO } from '../../dto/post/post.misc.update.dto';
+import { AdService } from '../../Services/Ad/ad.service';
 // import fs from 'fs';
 
 export class PostController implements IPostController {
   private _postService: PostService = new PostService();
+  private _adService: AdService = new AdService();
 
   constructor() {}
 
@@ -36,10 +38,26 @@ export class PostController implements IPostController {
         offset,
         newLimit
       );
+      
       const postsPromises: Promise<PostDTO>[] =
         result.data?.map(async (a) => await new PostDTO(a).build()) || [];
       const postsDTO: PostDTO[] = await Promise.all(postsPromises);
-      res.json({ ...result, ...{ data: postsDTO } });
+
+      // Fetch ads
+      const ads = await this._adService.getAds();
+
+      // Mix posts and ads
+      const mixedContent = [];
+      let adIndex = 0;
+      for (let i = 0; i < postsDTO.length; i++) {
+        mixedContent.push(postsDTO[i]);
+        if ((i + 1) % 3 === 0 && adIndex < ads.length) {
+          mixedContent.push(ads[adIndex]);
+          adIndex++;
+        }
+      }
+
+      res.json({ ...result, ...{ data: mixedContent } });
     } catch (err: any) {
       if (err instanceof SqlValidatorError) {
         req.statusCode = err.statusCode;
