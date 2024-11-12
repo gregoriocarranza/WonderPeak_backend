@@ -13,14 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.DO_SSH_KEY }}
+      - name: Add SSH key with passphrase
+        env:
+          SSH_PASSPHRASE: ${{ secrets.DO_SSH_PASSPHRASE }}
+        run: |
+          echo "${{ secrets.DO_SSH_KEY }}" > private_key
+          chmod 600 private_key
+          eval "$(ssh-agent -s)"
+          echo "$SSH_PASSPHRASE" | ssh-add private_key
 
       - name: Deploy to Digital Ocean
         run: |
-          ssh -o StrictHostKeyChecking=no  ${{ secrets.DO_CONECTION_URI }} "
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DO_CONNECTION_URI }} "
             if [ ! -d ~/WonderPeak_backend ]; then
               git clone https://github.com/gregoriocarranza/WonderPeak_backend.git ~/WonderPeak_backend
             else
@@ -29,3 +33,9 @@ jobs:
             cd ~/WonderPeak_backend
             docker-compose up --build -d
           "
+
+      - name: Clean up SSH key
+        if: always()
+        run: |
+          ssh-add -D
+          rm -f private_key
