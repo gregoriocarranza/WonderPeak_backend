@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  mi-mariadb:
+    image: mariadb:latest
+    container_name: WonderPeak-mariadb
+    env_file: ".env"
+    networks:
+      - wonderpeak-network
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+
+  my-phpmyadmin-mari:
+    image: phpmyadmin/phpmyadmin
+    container_name: WonderPeak-my-phpmyadmin-mari
+    networks:
+      - wonderpeak-network
+    environment:
+      PMA_HOST: mi-mariadb
+      PMA_PORT: 3306
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - mi-mariadb
+    restart: unless-stopped
+
+  app:
+    build: .
+    env_file: ".env"
+    container_name: WonderPeak-app
+    networks:
+      - wonderpeak-network
+    ports:
+      - "127.0.0.1:3030:3030"
+    depends_on:
+      - mi-mariadb
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+
+networks:
+  wonderpeak-network:
+    driver: bridge
