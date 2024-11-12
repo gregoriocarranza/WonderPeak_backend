@@ -1,0 +1,41 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add SSH key with passphrase
+        env:
+          SSH_PASSPHRASE: ${{ secrets.DO_SSH_PASSPHRASE }}
+        run: |
+          echo "${{ secrets.DO_SSH_KEY }}" > private_key
+          chmod 600 private_key
+          eval "$(ssh-agent -s)"
+          echo "$SSH_PASSPHRASE" | ssh-add private_key
+
+      - name: Deploy to Digital Ocean
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DO_CONNECTION_URI }} "
+            if [ ! -d ~/WonderPeak_backend ]; then
+              git clone https://github.com/gregoriocarranza/WonderPeak_backend.git ~/WonderPeak_backend
+            else
+              cd ~/WonderPeak_backend && git pull
+            fi
+            cd ~/WonderPeak_backend
+            docker-compose up --build -d
+          "
+
+      - name: Clean up SSH key
+        if: always()
+        run: |
+          ssh-add -D
+          rm -f private_key
