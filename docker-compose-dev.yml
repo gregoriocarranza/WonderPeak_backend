@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mi-mariadb:
+    image: mariadb:latest
+    container_name: WonderPeak-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: WonderPeak
+      MARIADB_USER: MASTER
+      MARIADB_PASSWORD: MASTER
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+
+  my-phpmyadmin-mari:
+    image: phpmyadmin/phpmyadmin
+    container_name: WonderPeak-my-phpmyadmin-mari
+    environment:
+      PMA_HOST: mi-mariadb
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - mi-mariadb
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
