@@ -8,8 +8,8 @@ servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub Local
     url: http://localhost:3030/api
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/GregorioCarranzaTorres/Social_web_V1/1.0.0
+  - description: DigitalOcean server
+    url: https://wonderpeak.uade.susoft.com.ar/api
 
 components:
   securitySchemes:
