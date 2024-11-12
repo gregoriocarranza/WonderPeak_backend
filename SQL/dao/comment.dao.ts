@@ -6,8 +6,41 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
   private _knexConnection: KnexConnection = new KnexConnection();
   constructor() {}
 
+  /**
+   *
+   * @deprecate use getAllByPost insted
+   */
+  public async getAll(offset: number = 0, limit: number = 20): Promise<any> {
+    let query: any;
+    query = this._knexConnection
+      .knex<IComment>('comments')
+      .select()
+      .options({ nestTables: true, rowMode: 'object' })
+      .offset(offset)
+      .limit(limit);
 
-  public async getAll(
+    const data = await query;
+    const count: any = await this._knexConnection
+      .knex<IComment>('comments')
+      .count('comment_uuid as total');
+    const totalCount: number = count[0]?.total;
+
+    const comments: IComment[] = data.map((d: any) => this.toIComment(d));
+    const page: number = offset === 0 ? offset : offset / limit;
+    const totalPages: number = Math.ceil(totalCount / limit);
+
+    return {
+      success: true,
+      data: comments,
+      page,
+      limit,
+      count: comments.length,
+      totalCount,
+      totalPages,
+    };
+  }
+
+  public async getAllByPost(
     postUuid: string,
     offset: number = 0,
     limit: number = 20
@@ -24,6 +57,7 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
     const data = await query;
     const count: any = await this._knexConnection
       .knex<IComment>('comments')
+      .where('post_uuid', postUuid)
       .count('comment_uuid as total');
     const totalCount: number = count[0]?.total;
 
@@ -74,7 +108,9 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
       .knex<IComment>('comments')
       .update(this.fromIComment(comment))
       .where('comment_uuid', comment?.commentUuid);
-    return comment.commentUuid ? await this.getByUuid(comment?.commentUuid) : null;
+    return comment.commentUuid
+      ? await this.getByUuid(comment?.commentUuid)
+      : null;
   }
 
   public async delete(commentUuid: string): Promise<void> {
