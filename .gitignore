@@ -108,5 +108,4 @@ yarn.lock
 priv_key.pem
 pub_key.pem
 .gitignore
-docker-compose.yml
 .DS_Store
