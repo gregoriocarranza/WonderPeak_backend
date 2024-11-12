@@ -109,3 +109,5 @@ priv_key.pem
 pub_key.pem
 .gitignore
 .DS_Store
+wonderPeak_key.pub
+wonderPeak_key
