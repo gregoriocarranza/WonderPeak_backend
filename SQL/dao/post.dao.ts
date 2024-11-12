@@ -46,6 +46,7 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .knex<IPost>('posts')
       .select()
       .options({ nestTables: true, rowMode: 'object' })
+      .orderBy('created_at', 'desc')
       .offset(offset)
       .limit(limit);
 
@@ -81,6 +82,7 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .select()
       .where('user_uuid', userUuid)
       .options({ nestTables: true, rowMode: 'object' })
+      .orderBy('created_at', 'desc')
       .offset(offset)
       .limit(limit);
 
