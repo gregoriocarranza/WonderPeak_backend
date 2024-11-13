@@ -16,6 +16,9 @@ import { IPostController } from './post.controller.interface';
 import { PostMiscUpdateInputDTO } from '../../dto/post/post.misc.update.dto';
 import { AdService } from '../../Services/Ad/ad.service';
 import { AdsDTO } from '../../dto/post/ads.dto';
+import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.dto';
+import { IInteractions } from '../../../SQL/Interface/IInteractions';
+import { IUser } from '../../../SQL/Interface/IUser';
 // import fs from 'fs';
 
 export class PostController implements IPostController {
@@ -266,30 +269,89 @@ export class PostController implements IPostController {
     }
   }
 
-  public async favorite(
+  public async putLike(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
+      const { postUuid } = req.params;
+      const user: IUser = req.user;
+      const inputDto: InteractionsInputDTO = new InteractionsInputDTO({
+        userUuid: user.userUuid,
+        postUuid,
+      }).build();
+      const validation: IInputValidator = await inputValidator(inputDto);
+      if (!validation.success) {
+        return next(await parseError(validation.message, 400));
+      }
+      const like: IInteractions | null = await this._postService.getLike(
+        inputDto.userUuid,
+        inputDto.postUuid
+      );
+      let result: any = {};
+      let data: any = {};
+
+      if (!like) {
+        data = await this._postService.like(inputDto);
+        result = 'Like Creado correctamente';
+      } else {
+        await this._postService.removeLike(
+          inputDto.userUuid,
+          inputDto.postUuid
+        );
+        result = 'Like Eliminado correctamente';
+      }
+
       res.status(200).json({
         success: true,
-        message: 'Not implemented yet',
+        message: result,
+        data,
       });
     } catch (error: any) {
       next(error);
     }
   }
 
-  public async like(
+  public async putFavorite(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
+      const { postUuid } = req.params;
+      const user: IUser = req.user;
+      const inputDto: InteractionsInputDTO = new InteractionsInputDTO({
+        userUuid: user.userUuid,
+        postUuid,
+      }).build();
+      const validation: IInputValidator = await inputValidator(inputDto);
+      if (!validation.success) {
+        return next(await parseError(validation.message, 400));
+      }
+      const favorite: IInteractions | null =
+        await this._postService.getFavorite(
+          inputDto.userUuid,
+          inputDto.postUuid
+        );
+      let result: any = {};
+      let data: any = {};
+
+      if (!favorite) {
+        data = await this._postService.favorite(inputDto);
+        result = 'Favorite Creado correctamente';
+      } else {
+        await this._postService.removeFavorite(
+          inputDto.userUuid,
+          inputDto.postUuid
+        );
+        result = 'Favorite Eliminado correctamente';
+      }
+
       res.status(200).json({
         success: true,
-        message: 'Not implemented yet',
+        message: result,
+        data,
       });
     } catch (error: any) {
       next(error);

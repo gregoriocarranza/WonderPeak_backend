@@ -40,7 +40,7 @@ export class PostRouter {
       '/:postUuid',
       decodeJwtMiddleware,
       userMandatory,
-        this._postController.updateMiscs.bind(this._postController)
+      this._postController.updateMiscs.bind(this._postController)
     );
     this.router.delete(
       '/:postUuid',
@@ -52,14 +52,13 @@ export class PostRouter {
       '/:postUuid/favorite',
       decodeJwtMiddleware,
       userMandatory,
-        this._postController.favorite.bind(this._postController)
+      this._postController.putFavorite.bind(this._postController)
     );
     this.router.put(
       '/:postUuid/like',
       decodeJwtMiddleware,
       userMandatory,
-        this._postController.like.bind(this._postController)
+      this._postController.putLike.bind(this._postController)
     );
-
   }
 }
