@@ -3,9 +3,15 @@ import { PostInputDTO } from '../../../SQL/dto/post/post.input.dto';
 import { IDataPaginator } from '../interfaces/IDataPaginator';
 import { IPost } from '../../../SQL/Interface/IPost';
 import cloudinary from '../../Configurations/Cloudinary';
+import { LikesDAO } from '../../../SQL/dao/likes.dao';
+import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.dto';
+import { IInteractions } from '../../../SQL/Interface/IInteractions';
+import { FavoritesDAO } from '../../../SQL/dao/favorites.dao';
 
 export class PostService {
   private _postDAO: PostDAO = new PostDAO();
+  private _likeDAO: LikesDAO = new LikesDAO();
+  private _favoriteDAO: FavoritesDAO = new FavoritesDAO();
   constructor() {}
 
   async uploadImageBase64(base64Data: string): Promise<string> {
@@ -51,12 +57,40 @@ export class PostService {
     return await this._postDAO.delete(uuid);
   }
 
-  public async favorite(postDTO: PostInputDTO): Promise<boolean> {
-    return await this._postDAO.favorite(postDTO);
+  public async getFavorite(
+    userUuid: string,
+    postUuid: string
+  ): Promise<IInteractions | null> {
+    return await this._favoriteDAO.getFavorites(userUuid, postUuid);
   }
 
-  public async like(postDTO: PostInputDTO): Promise<boolean> {
-    return await this._postDAO.like(postDTO);
+  public async favorite(
+    favoriteInputDto: InteractionsInputDTO
+  ): Promise<IInteractions | null> {
+    return await this._favoriteDAO.create(favoriteInputDto);
+  }
+
+  public async removeFavorite(
+    userUuid: string,
+    postUuid: string
+  ): Promise<void> {
+    return await this._favoriteDAO.delete(userUuid, postUuid);
+  }
+
+  public async getLike(
+    userUuid: string,
+    postUuid: string
+  ): Promise<IInteractions | null> {
+    return await this._likeDAO.getLike(userUuid, postUuid);
+  }
+
+  public async like(
+    likeInputDto: InteractionsInputDTO
+  ): Promise<IInteractions | null> {
+    return await this._likeDAO.create(likeInputDto);
+  }
+  public async removeLike(userUuid: string, postUuid: string): Promise<void> {
+    return await this._likeDAO.delete(userUuid, postUuid);
   }
 
   set postDAO(postDAO: PostDAO) {

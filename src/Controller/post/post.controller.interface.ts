@@ -13,12 +13,12 @@ export interface IPostController extends ICrudController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
-  favorite(
+  putFavorite(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
   ): Promise<void>;
-  like(
+  putLike(
     req: IRequestExtendedUser | any,
     res: Response,
     next: NextFunction
