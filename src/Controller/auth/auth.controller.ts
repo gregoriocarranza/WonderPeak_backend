@@ -145,7 +145,7 @@ export class AuthController implements IAuthController {
           this.SECRET_KEY,
           { expiresIn: '15m' }
         );
-        const resetUrl = `${process.env.FRONT_HOST}/reset_password?resetToken=${token}`;
+        const resetUrl = `${process.env.FRONT_HOST}/reset-password?resetToken=${token}`;
         const filePath = path.join(
           __dirname,
           '..',
