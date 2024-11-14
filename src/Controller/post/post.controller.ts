@@ -35,6 +35,7 @@ export class PostController implements IPostController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const { mine } = req.query;
       const { page, limit } = paginationHelper(req);
       const { userUuid } = req.user;
       const newpage: number = page;
@@ -49,7 +50,11 @@ export class PostController implements IPostController {
           newLimit
         );
       let followersUuidsLists: Array<string> = [];
-      followersUuidsLists.push(userUuid);
+
+      if (mine == 'true') {
+        followersUuidsLists.push(userUuid);
+      }
+
       followings.data.forEach((user) => {
         followersUuidsLists.push(user.userUuid);
       });

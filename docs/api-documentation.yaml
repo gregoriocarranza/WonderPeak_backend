@@ -1660,6 +1660,13 @@ paths:
       security:
         - bearerAuth: []
       parameters:
+        - name: mine
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+            description: "If true, the endpoint will include your posts in the results. If false, it will return only the posts from your followings. If you don't follow anyone, it will return all posts in descending order."
         - name: page
           in: query
           required: false

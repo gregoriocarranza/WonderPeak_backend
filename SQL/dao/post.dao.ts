@@ -49,11 +49,9 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .knex<IPost>('posts')
       .select()
       .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
-      .where((builder) => {
+      .modify((builder) => {
         if (followersUuidsLists.length > 0) {
-          builder.orWhere((subBuilder) => {
-            subBuilder.whereIn('posts.user_uuid', followersUuidsLists);
-          });
+          builder.whereIn('posts.user_uuid', followersUuidsLists);
         }
       })
       .options({ nestTables: true, rowMode: 'object' })
@@ -64,14 +62,13 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
     console.log(query.toString());
 
     const data = await query;
+
     const count: any = await this._knexConnection
       .knex<IPost>('posts')
       .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
-      .where((builder) => {
+      .modify((builder) => {
         if (followersUuidsLists.length > 0) {
-          builder.orWhere((subBuilder) => {
-            subBuilder.whereIn('posts.user_uuid', followersUuidsLists);
-          });
+          builder.whereIn('posts.user_uuid', followersUuidsLists);
         }
       })
       .count('posts.post_uuid as total');
