@@ -6,6 +6,7 @@ export interface IPost {
   userUuid: string;
   title: string;
   text: string;
+  placeHolder: string;
   latitude: number;
   longitude: number;
   mapsUrl: string;
@@ -14,6 +15,12 @@ export interface IPost {
   likesCount: number;
   createdAt: Date;
   updateAt: Date;
+
+  name:string
+  lastName:string
+  nickname:string
+  profileUserImage:string
+  level:number
 }
 
 export interface IPostDAO<I, O> extends IBaseDAO<I, O> {

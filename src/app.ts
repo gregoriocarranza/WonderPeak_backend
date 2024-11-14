@@ -41,6 +41,17 @@ if (process.env.ENVIRONMENT != 'production') {
 }
 
 app.use(express.static(path.join(__dirname, '../public')));
+console.log('Serving static files from:', path.join(__dirname, '../public'));
+
+app.get('/reset_password', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'reset-password.html'));
+});
+
+app.get('/reset_succesfully', (req, res) => {
+  res.sendFile(
+    path.join(__dirname, '../public', 'reset_succesfully-password.html')
+  );
+});
 
 app.use('/api/health', new HealthRouter().router);
 app.use('/api/auth', new AuthRouter().router);

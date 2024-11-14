@@ -177,8 +177,9 @@ export class PostController implements IPostController {
     const postInputDTO: PostInputDTO = new PostInputDTO({
       postUuid: uuidv4(),
       userUuid: req.user.userUuid,
-      latitude: locationData.latitud,
-      longitude: locationData.latitud,
+      placeHolder: locationData.placeHolder,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       mapsUrl: locationData.mapsUrl,
       multimediaUrl,
       ...req.body,

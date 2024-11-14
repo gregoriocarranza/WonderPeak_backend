@@ -110,6 +110,10 @@ components:
         text:
           type: string
           example: 'Exploring the vast forests!'
+        user:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUserData'
         location:
           type: object
           description: 'The geographic location related to the post.'
@@ -126,6 +130,10 @@ components:
               type: string
               description: 'URL to view the location on Google Maps.'
               example: 'https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5'
+            placeHolder:
+              type: string
+              description: 'A placeHolder for the location to show in our app.'
+              example: 'Tropitango'
         multimediaUrl:
           type: string
           example: 'https://example.com/image.jpg'
@@ -1222,6 +1230,7 @@ paths:
             "title": "Nature Adventures",
             "text": "Exploring the vast forests!",
             "location": {
+              "placeHolder": "Tropitango",
               "latitude": 17.562,
               "longitude": -3.625,
               "mapsUrl": "https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5"
@@ -1245,7 +1254,7 @@ paths:
                   type: string
                   format: JSON
                   description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
-                  example: '{"latitude": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
+                  example: '{"placeHolder": "Tropitango","latitude": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
                 multimediaFiletype:
                   type: string
                   description: 'The image file encoded type (can be BASE64 or simply the URL from any host you use).'

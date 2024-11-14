@@ -45,8 +45,9 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
     query = this._knexConnection
       .knex<IPost>('posts')
       .select()
+      .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
       .options({ nestTables: true, rowMode: 'object' })
-      .orderBy('created_at', 'desc')
+      .orderBy('posts.created_at', 'desc')
       .offset(offset)
       .limit(limit);
 
@@ -149,22 +150,13 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .del();
   }
 
-  public async favorite(postDTO: PostInputDTO): Promise<boolean> {
-    // TODO: Implement favorite
-    return true;
-  }
-
-  public async like(postDTO: PostInputDTO): Promise<boolean> {
-    // TODO: Implement like
-    return true;
-  }
-
   private fromIPost(post: PostInputDTO): any {
     return {
       user_uuid: post?.userUuid,
       post_uuid: post?.postUuid,
       title: post?.title,
       text: post?.text,
+      place_holder: post?.placeHolder,
       latitude: post?.latitude,
       longitude: post?.longitude,
       mapsUrl: post?.mapsUrl,
@@ -179,6 +171,7 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       postUuid: data.posts.post_uuid,
       title: data.posts.title,
       text: data.posts.text,
+      placeHolder: data.posts.place_holder,
       latitude: data.posts.latitude,
       longitude: data.posts.longitude,
       mapsUrl: data.posts.mapsUrl,
@@ -187,6 +180,12 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       updateAt: data.posts.updated_at,
       commentCount: data.posts.comment_count,
       likesCount: data.posts.likes_count,
+
+      name: data?.user?.name || null,
+      lastName: data?.user?.lastname || null,
+      nickname: data?.user?.nickname || null,
+      profileUserImage: data?.user?.profile_image || null,
+      level: data?.user?.gamification_level || null,
     };
   }
 

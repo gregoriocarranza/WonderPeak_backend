@@ -77,6 +77,7 @@ const knexInstance = new KnexConnection().knex;
           .withKeyName('fk_user_post');
         table.string('title').notNullable();
         table.text('text').defaultTo('');
+        table.string('place_holder').defaultTo(null);
         table.float('latitude').defaultTo(null);
         table.float('longitude').defaultTo(null);
         table.text('mapsUrl').defaultTo(null);

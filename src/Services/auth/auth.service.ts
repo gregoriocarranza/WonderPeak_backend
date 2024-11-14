@@ -165,7 +165,7 @@ export class AuthService {
 
       const data = await response.json();
       if (response.status >= 400) {
-        throw new Error(data.error || 'Failed to update user password');
+        throw new Error(data.message || 'Failed to update user password');
       }
 
       console.log('Password updated successfully');
