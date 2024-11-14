@@ -16,10 +16,16 @@ const knexInstance = new KnexConnection().knex;
         table.string('lastname');
         table.string('email').unique();
         table.string('nickname').defaultTo('Anonymous');
-        table.string('profile_image').defaultTo(null);
-        // .defaultTo(`http://localhost:${process.env.PORT}/profileImgs/defaultProfileImage.jpg);
-        table.string('cover_image').defaultTo(null);
-        // .defaultTo(`http://localhost:${process.env.PORT}/profileImgs/defaultCoverImage.jpg`);
+        table
+          .string('profile_image')
+          .defaultTo(
+            'https://res.cloudinary.com/cloudinary0gregorio/image/upload/v1731628197/WonderPeak_Posts/default-profile-image.jpg'
+          );
+        table
+          .string('cover_image')
+          .defaultTo(
+            'https://res.cloudinary.com/cloudinary0gregorio/image/upload/v1731628197/WonderPeak_Posts/default-profile-image.jpg'
+          );
         table.text('description');
         table.string('gender');
         table.integer('gamification_level').defaultTo(1);
