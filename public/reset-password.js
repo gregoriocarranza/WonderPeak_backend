@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMessage = document.getElementById('errorMessage');
   const submitButton = document.getElementById('submitButton');
 
-  const API_BASE_URL = 'http://localhost:3030';
+  const API_BASE_URL = 'https://wonderpeak.uade.susoft.com.ar/';
   errorMessage.style.visibility = 'hidden';
 
   // Función para validar la contraseña
