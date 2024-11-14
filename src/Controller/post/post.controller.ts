@@ -167,10 +167,10 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    const { userUuid } = req.user;
     const { multimediaFiletype, multimediaFile } = req.body;
     const locationData = await JSON.parse(req.body?.location);
     let multimediaUrl = '';
-
     switch (multimediaFiletype) {
       case 'URL':
         multimediaUrl = multimediaFile;
@@ -187,8 +187,10 @@ export class PostController implements IPostController {
         //     return res.status(500).send('Error al guardar la imagen');
         //   }
         // });
-        multimediaUrl =
-          await this._postService.uploadImageBase64(multimediaFile);
+        multimediaUrl = await this._postService.uploadImageBase64(
+          multimediaFile,
+          userUuid
+        );
         break;
       default:
         return next(await parseError('multimediaFiletype not supported', 500));
@@ -243,7 +245,10 @@ export class PostController implements IPostController {
       }
       if (userUuid != postData.userUuid) {
         return next(
-          await parseError('User not authorized to do this action', 401)
+          await parseError(
+            'You do not have permission to perform this operation',
+            403
+          )
         );
       }
       Object.assign(postUpdateInputDTO, { postUuid });
@@ -272,10 +277,25 @@ export class PostController implements IPostController {
   ): Promise<void> {
     try {
       const { postUuid } = req.params;
+      const { userUuid } = req.user;
       const inputDto: UuidInputDTO = new UuidInputDTO(postUuid).build();
       const validation: IInputValidator = await inputValidator(inputDto);
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
+      }
+      const postData: IPost | null =
+        await this._postService.getByUuid(postUuid);
+      if (!postData) {
+        return next(await parseError('Post not found', 404));
+      }
+
+      if (postData.userUuid != userUuid) {
+        return next(
+          await parseError(
+            'You do not have permission to perform this operation',
+            403
+          )
+        );
       }
       await this._postService.delete(inputDto.uuid);
       res.json({

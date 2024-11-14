@@ -14,11 +14,15 @@ export class PostService {
   private _favoriteDAO: FavoritesDAO = new FavoritesDAO();
   constructor() {}
 
-  async uploadImageBase64(base64Data: string): Promise<string> {
+  async uploadImageBase64(
+    base64Data: string,
+    userUuid: string
+  ): Promise<string> {
     try {
       const result = await cloudinary.uploader.upload(base64Data, {
         folder: 'WonderPeak_Posts',
-        use_filename: true,
+        public_id: `${userUuid}+${Date.now()}`,
+        use_filename: false,
         unique_filename: false,
       });
       console.log('Imagen subida con éxito:', result.secure_url);
