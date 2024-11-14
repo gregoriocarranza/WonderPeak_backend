@@ -50,12 +50,9 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .select()
       .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
       .where((builder) => {
-        builder.whereRaw('posts.user_uuid = user.user_uuid');
         if (followersUuidsLists.length > 0) {
           builder.orWhere((subBuilder) => {
-            followersUuidsLists.forEach((userUuid) => {
-              subBuilder.orWhere('posts.user_uuid', userUuid);
-            });
+            subBuilder.whereIn('posts.user_uuid', followersUuidsLists);
           });
         }
       })
@@ -64,17 +61,16 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .offset(offset)
       .limit(limit);
 
+    console.log(query.toString());
+
     const data = await query;
     const count: any = await this._knexConnection
       .knex<IPost>('posts')
       .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
       .where((builder) => {
-        builder.whereRaw('posts.user_uuid = user.user_uuid');
         if (followersUuidsLists.length > 0) {
           builder.orWhere((subBuilder) => {
-            followersUuidsLists.forEach((userUuid) => {
-              subBuilder.orWhere('posts.user_uuid', userUuid);
-            });
+            subBuilder.whereIn('posts.user_uuid', followersUuidsLists);
           });
         }
       })

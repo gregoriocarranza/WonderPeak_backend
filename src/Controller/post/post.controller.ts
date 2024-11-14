@@ -49,6 +49,7 @@ export class PostController implements IPostController {
           newLimit
         );
       let followersUuidsLists: Array<string> = [];
+      followersUuidsLists.push(userUuid);
       followings.data.forEach((user) => {
         followersUuidsLists.push(user.userUuid);
       });
