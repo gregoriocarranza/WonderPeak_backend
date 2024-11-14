@@ -39,19 +39,13 @@ export class PostDTO {
     this.createdAt = data.createdAt ? new Date(data.createdAt) : null;
     this.updatedAt = data.updated_at ? new Date(data.updated_at) : null;
     this.user = null;
-    if (
-      data.name &&
-      data.lastName &&
-      data.nickname &&
-      data.profileUserImage &&
-      data.level
-    ) {
+    if (data.name) {
       this.user = {
         name: data.name,
-        lastName: data.lastName,
-        nickname: data.nickname,
-        profileUserImage: data.profileUserImage,
-        level: data.level,
+        lastName: data.lastName || null,
+        nickname: data.nickname || null,
+        profileUserImage: data.profileUserImage || null,
+        level: data.level || null,
       };
     }
   }
