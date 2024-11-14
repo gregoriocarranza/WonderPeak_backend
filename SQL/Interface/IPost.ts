@@ -16,13 +16,17 @@ export interface IPost {
   createdAt: Date;
   updateAt: Date;
 
-  name:string
-  lastName:string
-  nickname:string
-  profileUserImage:string
-  level:number
+  name: string;
+  lastName: string;
+  nickname: string;
+  profileUserImage: string;
+  level: number;
 }
 
 export interface IPostDAO<I, O> extends IBaseDAO<I, O> {
-  getFeed: (offset: number, limit: number) => Promise<any>;
+  getFeed: (
+    offset: number,
+    limit: number,
+    followersUuidsLists: Array<string>
+  ) => Promise<any>;
 }

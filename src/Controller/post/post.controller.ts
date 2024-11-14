@@ -19,11 +19,13 @@ import { AdsDTO } from '../../dto/post/ads.dto';
 import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.dto';
 import { IInteractions } from '../../../SQL/Interface/IInteractions';
 import { IUser } from '../../../SQL/Interface/IUser';
+import { UserService } from '../../Services/User/user.service';
 // import fs from 'fs';
 
 export class PostController implements IPostController {
   private _postService: PostService = new PostService();
   private _adService: AdService = new AdService();
+  private _userService: UserService = new UserService();
 
   constructor() {}
 
@@ -34,13 +36,27 @@ export class PostController implements IPostController {
   ): Promise<void> {
     try {
       const { page, limit } = paginationHelper(req);
+      const { userUuid } = req.user;
       const newpage: number = page;
       let newLimit: number = limit;
       newLimit = newLimit === 0 ? 20 : newLimit;
       const offset = newpage * newLimit;
+      const followings: IDataPaginator<IUser> =
+        await this._userService.getAllFollowers(
+          false,
+          userUuid,
+          offset,
+          newLimit
+        );
+      let followersUuidsLists: Array<string> = [];
+      followings.data.forEach((user) => {
+        followersUuidsLists.push(user.userUuid);
+      });
+
       const result: IDataPaginator<IPost> = await this._postService.getFeed(
         offset,
-        newLimit
+        newLimit,
+        followersUuidsLists
       );
 
       const postsPromises: Promise<PostDTO>[] =

@@ -5,14 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc && copyfiles -u 0 public/** dist/public",
     "start": "npm run build && node ./dist/src/server.js",
     "start:prod": "docker-compose up --build",
     "start:dev": "docker-compose -f docker-compose-dev.yml -p  wonderpeak_backend up -d && nodemon src/server.ts",
     "lint": "eslint  src/**/*.{js,jsx,ts,tsx,json}",
     "format": "prettier --write .",
     "setup": "docker-compose -f docker-compose-dev.yml -p wonderpeak_backend up -d && ts-node ./SQL/setupDatabase.ts",
-    "setup:db": "ts-node ./SQL/setupDatabase.ts"
+    "setup:db": "ts-node ./SQL/setupDatabase.ts",
+    "ssh": "dotenv -e .env -- cmd /c \"%SSH_COMMAND%\""
   },
   "keywords": [],
   "author": "",
@@ -58,6 +59,8 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "copyfiles": "^2.4.1",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",

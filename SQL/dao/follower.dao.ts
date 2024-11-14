@@ -15,33 +15,42 @@ export class FollowerDAO implements IFollower {
     is_follower: boolean, // true: followers, false: following
     userUuid: string,
     offset: number = 0,
-    limit: number = 20,
+    limit: number = 20
   ): Promise<any> {
     let query: any;
+    let count: any;
     if (is_follower) {
       query = this._knexConnection
-      .knex<IUser>('follower')
-      .select()
-      .join('user', 'user.user_uuid', '=', 'follower.follower_uuid')
-      .where('follower.followed_uuid', userUuid)
-      .options({ nestTables: true, rowMode: 'object' })
-      .offset(offset)
-      .limit(limit);
+        .knex<any>('follower')
+        .select()
+        .join('user', 'user.user_uuid', '=', 'follower.follower_uuid')
+        .where('follower.followed_uuid', userUuid)
+        .options({ nestTables: true, rowMode: 'object' })
+        .offset(offset)
+        .limit(limit);
+
+      count = await this._knexConnection
+        .knex<any>('follower')
+        .where('follower.followed_uuid', userUuid)
+        .count('followed_uuid as total');
     } else {
       query = this._knexConnection
-        .knex<IUser>('follower')
+        .knex<any>('follower')
         .select()
         .join('user', 'user.user_uuid', '=', 'follower.followed_uuid')
         .where('follower.follower_uuid', userUuid)
         .options({ nestTables: true, rowMode: 'object' })
         .offset(offset)
         .limit(limit);
+
+      count = await this._knexConnection
+        .knex<any>('follower')
+        .where('follower.follower_uuid', userUuid)
+        .count('follower_uuid as total');
     }
 
     const data = await query;
-    const count: any = await this._knexConnection
-      .knex<IUser>('user')
-      .count('user_uuid as total');
+
     const totalCount: number = count[0]?.total;
 
     const users: IUser[] = data.map((d: any) => this.toIUser(d));
@@ -66,7 +75,7 @@ export class FollowerDAO implements IFollower {
         follower_uuid: followDTO.userFollowerUuid,
         followed_uuid: followDTO.userFollowedUuid,
         created_at: this._knexConnection.knex.fn.now(),
-        updated_at: this._knexConnection.knex.fn.now()
+        updated_at: this._knexConnection.knex.fn.now(),
       })
       .onConflict(['follower_uuid', 'followed_uuid'])
       .ignore();
@@ -76,7 +85,7 @@ export class FollowerDAO implements IFollower {
       .knex('follower')
       .where({
         follower_uuid: followDTO.userFollowerUuid,
-        followed_uuid: followDTO.userFollowedUuid
+        followed_uuid: followDTO.userFollowedUuid,
       })
       .del();
   }
@@ -86,7 +95,7 @@ export class FollowerDAO implements IFollower {
       .select()
       .where({
         follower_uuid: followDTO.userFollowerUuid,
-        followed_uuid: followDTO.userFollowedUuid
+        followed_uuid: followDTO.userFollowedUuid,
       })
       .first();
     return !!data;
@@ -95,14 +104,17 @@ export class FollowerDAO implements IFollower {
   public async removeFollower(followDTO: FollowerInputDTO): Promise<void> {
     await this._knexConnection
       .knex('follower')
-      .where({ follower_uuid: followDTO.userFollowerUuid, followed_uuid: followDTO.userFollowedUuid })
+      .where({
+        follower_uuid: followDTO.userFollowerUuid,
+        followed_uuid: followDTO.userFollowedUuid,
+      })
       .del();
   }
 
   public async getAllFavorites(
     userUuid: string,
     offset: number = 0,
-    limit: number = 20,
+    limit: number = 20
   ): Promise<any> {
     let query: any;
     query = this._knexConnection
@@ -137,18 +149,26 @@ export class FollowerDAO implements IFollower {
   }
 
   public async favoriteUser(followDTO: FollowerInputDTO): Promise<boolean> {
-    const data = await this._knexConnection
+    await this._knexConnection
       .knex('follower')
       .update({
         updated_at: this._knexConnection.knex.fn.now(),
-        favorite: this._knexConnection.knex.raw('NOT favorite')
+        favorite: this._knexConnection.knex.raw('NOT favorite'),
       })
       .where({
         follower_uuid: followDTO.userFollowerUuid,
-        followed_uuid: followDTO.userFollowedUuid
-      })
-      .returning('favorite');
-    return !!data;
+        followed_uuid: followDTO.userFollowedUuid,
+      });
+
+    const [data] = await this._knexConnection
+      .knex('follower')
+      .select('favorite')
+      .where({
+        follower_uuid: followDTO.userFollowerUuid,
+        followed_uuid: followDTO.userFollowedUuid,
+      });
+
+    return !!data.favorite;
   }
 
   public toIUser(data: any): IUser {

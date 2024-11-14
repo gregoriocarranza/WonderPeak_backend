@@ -29,8 +29,12 @@ export class PostService {
     }
   }
 
-  async getFeed(offset: number, limit: number): Promise<IDataPaginator<IPost>> {
-    return await this._postDAO.getFeed(offset, limit);
+  async getFeed(
+    offset: number,
+    limit: number,
+    followersUuidsLists: Array<string>
+  ): Promise<IDataPaginator<IPost>> {
+    return await this._postDAO.getFeed(offset, limit, followersUuidsLists);
   }
 
   async getAllByUserUuid(

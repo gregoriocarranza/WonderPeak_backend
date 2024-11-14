@@ -40,12 +40,25 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
     };
   }
 
-  public async getFeed(offset: number = 0, limit: number = 20): Promise<any> {
-    let query: any;
-    query = this._knexConnection
+  public async getFeed(
+    offset: number = 0,
+    limit: number = 20,
+    followersUuidsLists: Array<string>
+  ): Promise<any> {
+    const query = this._knexConnection
       .knex<IPost>('posts')
       .select()
       .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
+      .where((builder) => {
+        builder.whereRaw('posts.user_uuid = user.user_uuid');
+        if (followersUuidsLists.length > 0) {
+          builder.orWhere((subBuilder) => {
+            followersUuidsLists.forEach((userUuid) => {
+              subBuilder.orWhere('posts.user_uuid', userUuid);
+            });
+          });
+        }
+      })
       .options({ nestTables: true, rowMode: 'object' })
       .orderBy('posts.created_at', 'desc')
       .offset(offset)
@@ -54,7 +67,19 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
     const data = await query;
     const count: any = await this._knexConnection
       .knex<IPost>('posts')
-      .count('post_uuid as total');
+      .leftJoin('user', 'posts.user_uuid', 'user.user_uuid')
+      .where((builder) => {
+        builder.whereRaw('posts.user_uuid = user.user_uuid');
+        if (followersUuidsLists.length > 0) {
+          builder.orWhere((subBuilder) => {
+            followersUuidsLists.forEach((userUuid) => {
+              subBuilder.orWhere('posts.user_uuid', userUuid);
+            });
+          });
+        }
+      })
+      .count('posts.post_uuid as total');
+
     const totalCount: number = count[0]?.total;
 
     const posts: IPost[] = data.map((d: any) => this.toIPost(d));
