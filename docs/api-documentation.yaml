@@ -610,24 +610,12 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: name
+        - name: query
           in: query
           required: false
           schema:
             type: string
           example: 'Paul'
-        - name: lastName
-          in: query
-          required: false
-          schema:
-            type: string
-          example: 'Sundays'
-        - name: nickname
-          in: query
-          required: false
-          schema:
-            type: string
-          example: 'Paul_Sundays69'
         - name: page
           in: query
           required: false
