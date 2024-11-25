@@ -27,7 +27,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { name, lastName, nickname } = req.query;
+      const { query } = req.query || null;
       const { page, limit } = paginationHelper(req);
       const newpage: number = page;
       let newLimit: number = limit;
@@ -36,7 +36,7 @@ export class UserController implements IUserController {
       const result: IDataPaginator<IUser> = await this._userService.getAll(
         offset,
         newLimit,
-        name || lastName || nickname || null
+        query
       );
       const usersPromises: Promise<UserDTO>[] =
         result.data?.map(async (a) => await new UserDTO(a).build()) || [];
