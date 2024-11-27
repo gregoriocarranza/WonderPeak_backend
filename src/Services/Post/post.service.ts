@@ -7,7 +7,7 @@ import { LikesDAO } from '../../../SQL/dao/likes.dao';
 import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.dto';
 import { IInteractions } from '../../../SQL/Interface/IInteractions';
 import { FavoritesDAO } from '../../../SQL/dao/favorites.dao';
-
+import { Readable } from 'stream';
 export class PostService {
   private _postDAO: PostDAO = new PostDAO();
   private _likeDAO: LikesDAO = new LikesDAO();
@@ -31,6 +31,46 @@ export class PostService {
       console.error('Error al subir la imagen:', error);
       throw error;
     }
+  }
+
+  /**
+   * Sube un archivo a Cloudinary desde un buffer
+   * @param fileBuffer - El buffer del archivo
+   * @param userUuid - UUID del usuario para identificar la imagen
+   * @returns La URL segura del archivo subido
+   */
+  async uploadFileToCloudinary(
+    fileBuffer: Buffer,
+    userUuid: string
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'WonderPeak_Posts',
+          public_id: `${userUuid}-${Date.now()}`,
+          resource_type: 'auto',
+          use_filename: false,
+          unique_filename: false,
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Error al subir el archivo:', error);
+            return reject(error);
+          }
+          if (result?.secure_url) {
+            console.log('Archivo subido con éxito:', result.secure_url);
+            resolve(result.secure_url);
+          } else {
+            reject(new Error('No se pudo obtener la URL segura del archivo'));
+          }
+        }
+      );
+
+      const readableStream = new Readable();
+      readableStream.push(fileBuffer);
+      readableStream.push(null); // Marca el final del stream
+      readableStream.pipe(uploadStream);
+    });
   }
 
   async getFeed(

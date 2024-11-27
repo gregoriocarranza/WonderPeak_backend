@@ -19,16 +19,16 @@ export class UserRouter {
       this._userController.getAll.bind(this._userController)
     );
     this.router.get(
-      '/:userUuid',
-      decodeJwtMiddleware,
-      userMandatory,
-      this._userController.getByUuid.bind(this._userController)
-    );
-    this.router.get(
       '/me',
       decodeJwtMiddleware,
       userMandatory,
       this._userController.getByJwt.bind(this._userController)
+    );
+    this.router.get(
+      '/:userUuid',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.getByUuid.bind(this._userController)
     );
     this.router.delete(
       '/me',
