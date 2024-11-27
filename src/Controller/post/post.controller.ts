@@ -191,8 +191,11 @@ export class PostController implements IPostController {
         console.error(err);
         return next(parseError('Error al procesar el archivo', 400));
       }
-      const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
-      console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
+
+      if (req?.file?.size) {
+        const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
+        console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
+      }
 
       const { userUuid } = req.user;
       const locationData = JSON.parse(req.body.location);
