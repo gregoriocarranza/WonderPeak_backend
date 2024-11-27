@@ -41,6 +41,7 @@ export class PostService {
    */
   async uploadFileToCloudinary(
     fileBuffer: Buffer,
+    multimediaFileType: 'png' | 'mp4',
     userUuid: string
   ): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -49,6 +50,7 @@ export class PostService {
           folder: 'WonderPeak_Posts',
           public_id: `${userUuid}-${Date.now()}`,
           resource_type: 'auto',
+          format: multimediaFileType,
           use_filename: false,
           unique_filename: false,
         },

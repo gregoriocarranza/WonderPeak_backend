@@ -180,67 +180,87 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    upload(req, res, async (err) => {
-      if (err) {
-        console.error(err.message);
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({
-            error: `El archivo es demasiado grande. Máximo permitido: ${MAX_FILE_SIZE + ' MB' || '10 MB'}.`,
-          });
+    try {
+      upload(req, res, async (err) => {
+        if (!req.file) {
+          return next(parseError('Archivo multimedia requerido', 400));
         }
-        console.error(err);
-        return next(parseError('Error al procesar el archivo', 400));
-      }
+        if (err) {
+          console.error(err.message);
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              error: `El archivo es demasiado grande. Máximo permitido: ${MAX_FILE_SIZE + ' MB' || '10 MB'}.`,
+            });
+          }
+          console.error(err);
+          return next(parseError('Error al procesar el archivo', 400));
+        }
 
-      if (req?.file?.size) {
-        const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
-        console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
-      }
+        if (req?.file?.size) {
+          const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
+          console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
+        }
 
-      const { userUuid } = req.user;
-      const locationData = JSON.parse(req.body.location);
+        const { userUuid } = req.user;
+        const locationData = JSON.parse(req.body.location);
 
-      let multimediaUrl = '';
+        let multimediaUrl: string = '';
+        let multimediaFileType: 'png' | 'mp4' = 'png';
+        switch (req.body?.multimediaFileType.split('/')[0]) {
+          case 'image':
+            multimediaFileType = 'png';
+            break;
+          case 'video':
+            multimediaFileType = 'mp4';
+            break;
 
-      if (!req.file) {
-        return next(parseError('Archivo multimedia requerido', 400));
-      }
-
-      try {
-        multimediaUrl = await this._postService.uploadFileToCloudinary(
-          req.file.buffer,
-          userUuid
+          default:
+            throw new Error('multimediaFileType not suported');
+        }
+        console.log(
+          `Archivo con extension ${req.body?.multimediaFileType}. Guardandolo como ${multimediaFileType} `
         );
-      } catch (uploadError) {
-        console.error('Error al subir el archivo:', uploadError);
-        return next(parseError('Error al subir el archivo', 500));
-      }
 
-      // Crear el objeto Post
-      const postInputDTO: PostInputDTO = new PostInputDTO({
-        postUuid: uuidv4(),
-        userUuid,
-        placeHolder: locationData.placeHolder,
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
-        mapsUrl: locationData.mapsUrl,
-        multimediaUrl,
-        ...req.body,
-      }).build();
+        try {
+          multimediaUrl = await this._postService.uploadFileToCloudinary(
+            req.file.buffer,
+            multimediaFileType,
+            userUuid
+          );
+        } catch (uploadError) {
+          console.error('Error al subir el archivo:', uploadError);
+          return next(parseError('Error al subir el archivo', 500));
+        }
 
-      const validation = await inputValidator(postInputDTO);
-      if (!validation.success) {
-        return next(parseError(validation.message, 400));
-      }
+        // Crear el objeto Post
+        const postInputDTO: PostInputDTO = new PostInputDTO({
+          postUuid: uuidv4(),
+          userUuid,
+          placeHolder: locationData.placeHolder,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          mapsUrl: locationData.mapsUrl,
+          multimediaUrl,
+          ...req.body,
+        }).build();
 
-      const post = await this._postService.create(postInputDTO);
-      const postDTO = new PostDTO(post).build();
+        const validation = await inputValidator(postInputDTO);
+        if (!validation.success) {
+          return next(parseError(validation.message, 400));
+        }
 
-      res.json({
-        success: true,
-        data: postDTO,
+        const post = await this._postService.create(postInputDTO);
+        const postDTO = new PostDTO(post).build();
+
+        res.json({
+          success: true,
+          data: postDTO,
+        });
       });
-    });
+    } catch (err: any) {
+      console.error(err.message, err.stack);
+      next(new Error('Error creating an Post'));
+    }
   }
 
   public async updateMiscs(
