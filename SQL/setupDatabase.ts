@@ -88,6 +88,7 @@ const knexInstance = new KnexConnection().knex;
         table.float('longitude').defaultTo(null);
         table.text('mapsUrl').defaultTo(null);
         table.text('multimedia_url').defaultTo(null);
+        table.text('media_type').defaultTo('image');
         table.integer('comment_count').defaultTo(0);
         table.integer('likes_count').defaultTo(0);
         table.timestamp('created_at').defaultTo(knexInstance.fn.now());
