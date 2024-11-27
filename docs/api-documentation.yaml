@@ -1205,30 +1205,30 @@ paths:
       tags:
         - 'Posts'
       summary: 'Create a post'
-      description: 'Create a post and returns it.'
+      description: 'Create a post and return the created post. The multimedia file should be sent as part of a multipart/form-data request.'
       security:
         - bearerAuth: []
       requestBody:
         required: true
         description: |
-          Create a post with the following fields. Although the multimediaFile needs to be sent using base64_encoded due to the file upload, below is a JSON representation of the expected data structure:
+          Create a post by providing the required fields and attaching the multimedia file as part of a `multipart/form-data` request. Below is an example of the expected structure for text fields:
 
-          ```json
-          {
-            "title": "Nature Adventures",
-            "text": "Exploring the vast forests!",
-            "location": {
-              "placeHolder": "Tropitango",
-              "latitude": 17.562,
-              "longitude": -3.625,
-              "mapsUrl": "https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5"
-            },
-            "multimediaFiletype": URL   # Esto puede ser URL | BASE64 
-            "multimediaFile": "encoded_image_here"
-          }
+          - **title**: The title of the post (string).
+          - **text**: A detailed description of the post content (string).
+          - **location**: A JSON string containing location details, including latitude, longitude, and maps URL.
+          - **multimediaFile**: The multimedia file (image or video) attached directly in the `multipart/form-data`.
+
+          Example request:
+          ```
+          Content-Type: multipart/form-data
+
+          title=Nature Adventures
+          text=Exploring the vast forests!
+          location={"placeHolder": "Tropitango", "latitude": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/3u6hnvrzZTV4WeVw5"}
+          multimediaFile=<attached file>
           ```
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -1243,15 +1243,13 @@ paths:
                   format: JSON
                   description: 'A JSON string representing the location object, including latitude, longitude, and maps URL.'
                   example: '{"placeHolder": "Tropitango","latitude": 17.562, "longitude": -3.625, "mapsUrl": "https://maps.app.goo.gl/example"}'
-                multimediaFiletype:
-                  type: string
-                  description: 'The image file encoded type (can be BASE64 or simply the URL from any host you use).'
                 multimediaFile:
                   type: string
-                  description: 'The image file encoded as a base64 string (e.g., JPG or PNG, max size 5MB).'
+                  format: binary
+                  description: 'The multimedia file (image or video) to be uploaded, such as JPG, PNG, or MP4.'
       responses:
         '200':
-          description: 'Posts created successfully'
+          description: 'Post created successfully'
           content:
             application/json:
               schema:
@@ -1262,11 +1260,15 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'Posts created successfully'
+                    example: 'Post created successfully'
                   data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Post'
+                    $ref: '#/components/schemas/Post'
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError-400'
         '401':
           description: 'Unauthorized'
           content:

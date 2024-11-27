@@ -41,7 +41,6 @@ if (process.env.ENVIRONMENT != 'production') {
 }
 
 app.use(express.static(path.join(__dirname, '../public')));
-console.log('Serving static files from:', path.join(__dirname, '../public'));
 
 app.get('/reset-password', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'reset-password.html'));

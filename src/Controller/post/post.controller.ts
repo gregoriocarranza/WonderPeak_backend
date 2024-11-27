@@ -20,7 +20,20 @@ import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.
 import { IInteractions } from '../../../SQL/Interface/IInteractions';
 import { IUser } from '../../../SQL/Interface/IUser';
 import { UserService } from '../../Services/User/user.service';
-// import fs from 'fs';
+import multer from 'multer';
+
+const DEFAULT_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = Number(process.env.MAX_FILE_SIZE) * 1024 * 1024;
+
+const fileSizeLimit =
+  !isNaN(MAX_FILE_SIZE) && MAX_FILE_SIZE > 0
+    ? MAX_FILE_SIZE
+    : DEFAULT_FILE_SIZE;
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: fileSizeLimit },
+}).single('multimediaFile');
 
 export class PostController implements IPostController {
   private _postService: PostService = new PostService();
@@ -167,57 +180,63 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { userUuid } = req.user;
-    const { multimediaFiletype, multimediaFile } = req.body;
-    const locationData = await JSON.parse(req.body?.location);
-    let multimediaUrl = '';
-    switch (multimediaFiletype) {
-      case 'URL':
-        multimediaUrl = multimediaFile;
-        break;
-      case 'BASE64':
-        // const base64Data = multimediaFile.replace(
-        //   /^data:image\/\w+;base64,/,
-        //   ''
-        // );
-        // const buffer = Buffer.from(base64Data, 'base64');
-        // fs.writeFile('image.png', buffer, (err) => {
-        //   if (err) {
-        //     console.error(err);
-        //     return res.status(500).send('Error al guardar la imagen');
-        //   }
-        // });
-        multimediaUrl = await this._postService.uploadImageBase64(
-          multimediaFile,
+    upload(req, res, async (err) => {
+      if (err) {
+        console.error(err.message);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            error: `El archivo es demasiado grande. Máximo permitido: ${MAX_FILE_SIZE + ' MB' || '10 MB'}.`,
+          });
+        }
+        console.error(err);
+        return next(parseError('Error al procesar el archivo', 400));
+      }
+      const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
+      console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
+
+      const { userUuid } = req.user;
+      const locationData = JSON.parse(req.body.location);
+
+      let multimediaUrl = '';
+
+      if (!req.file) {
+        return next(parseError('Archivo multimedia requerido', 400));
+      }
+
+      try {
+        multimediaUrl = await this._postService.uploadFileToCloudinary(
+          req.file.buffer,
           userUuid
         );
-        break;
-      default:
-        return next(await parseError('multimediaFiletype not supported', 500));
-    }
+      } catch (uploadError) {
+        console.error('Error al subir el archivo:', uploadError);
+        return next(parseError('Error al subir el archivo', 500));
+      }
 
-    // Puedes guardarla en el sistema de archivos o manejarla según sea necesario
+      // Crear el objeto Post
+      const postInputDTO: PostInputDTO = new PostInputDTO({
+        postUuid: uuidv4(),
+        userUuid,
+        placeHolder: locationData.placeHolder,
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        mapsUrl: locationData.mapsUrl,
+        multimediaUrl,
+        ...req.body,
+      }).build();
 
-    const postInputDTO: PostInputDTO = new PostInputDTO({
-      postUuid: uuidv4(),
-      userUuid: req.user.userUuid,
-      placeHolder: locationData.placeHolder,
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      mapsUrl: locationData.mapsUrl,
-      multimediaUrl,
-      ...req.body,
-    }).build();
+      const validation = await inputValidator(postInputDTO);
+      if (!validation.success) {
+        return next(parseError(validation.message, 400));
+      }
 
-    const validation: IInputValidator = await inputValidator(postInputDTO);
-    if (!validation.success) {
-      return next(await parseError(validation.message, 400));
-    }
-    const post: IPost | null = await this._postService.create(postInputDTO);
-    const postDTO: PostDTO = await new PostDTO(post).build();
-    res.json({
-      success: true,
-      data: postDTO,
+      const post = await this._postService.create(postInputDTO);
+      const postDTO = new PostDTO(post).build();
+
+      res.json({
+        success: true,
+        data: postDTO,
+      });
     });
   }
 
