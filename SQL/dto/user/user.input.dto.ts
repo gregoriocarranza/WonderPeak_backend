@@ -11,6 +11,7 @@ export class UserInputDTO {
   gamificationLevel: number | null;
   auth0Id: string | null;
   active: boolean;
+  pushToken: string | null;
 
   constructor(data: any) {
     this.userUuid = data.userUuid;
@@ -25,6 +26,7 @@ export class UserInputDTO {
     this.gamificationLevel = data.gamificationLevel;
     this.auth0Id = data.auth0Id;
     this.active = data.active;
+    this.pushToken = data.pushToken || null;
   }
 
   public build(): UserInputDTO {

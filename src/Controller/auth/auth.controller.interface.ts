@@ -20,4 +20,9 @@ export interface IAuthController {
     next: NextFunction
   ): Promise<void>;
   resetPassword(req: Request, res: Response, next: NextFunction): Promise<void>;
+  registerPushToken(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

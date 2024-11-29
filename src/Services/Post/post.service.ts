@@ -113,7 +113,13 @@ export class PostService {
   ): Promise<IInteractions | null> {
     return await this._favoriteDAO.getFavorites(userUuid, postUuid);
   }
-
+  public async getFavoritePosts(
+    userUuid: string,
+    offset: number,
+    limit: number
+  ): Promise<any> {
+    return await this._favoriteDAO.getFavoritePosts(userUuid, offset, limit);
+  }
   public async favorite(
     favoriteInputDto: InteractionsInputDTO
   ): Promise<IInteractions | null> {

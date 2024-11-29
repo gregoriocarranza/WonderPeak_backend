@@ -23,4 +23,9 @@ export interface IPostController extends ICrudController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  getFavorites(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

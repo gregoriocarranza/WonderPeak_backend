@@ -442,4 +442,41 @@ export class PostController implements IPostController {
       next(error);
     }
   }
+
+  public async getFavorites(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page, limit } = paginationHelper(req);
+      const { userUuid } = req.user;
+      const newpage: number = page;
+      let newLimit: number = limit;
+      newLimit = newLimit === 0 ? 20 : newLimit;
+      const offset = newpage * newLimit;
+
+      const result: any = await this._postService.getFavoritePosts(
+        userUuid,
+        offset,
+        newLimit
+      );
+      console.log(result);
+      if (!result || !result.data || result.data.length === 0) {
+        return next(await parseError('No favorite posts found', 404));
+      }
+      const postsPromises: Promise<PostDTO>[] =
+        result.data?.map(async (a: any) => await new PostDTO(a).build()) || [];
+      const postsDTO: PostDTO[] = await Promise.all(postsPromises);
+
+      res.status(200).json({
+        success: true,
+        message: 'Favorites list retrieved',
+        data: postsDTO,
+      });
+    } catch (error: any) {
+      console.error('Error retrieving favorite posts:', error);
+      next(error);
+    }
+  }
 }

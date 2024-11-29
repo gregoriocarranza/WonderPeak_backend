@@ -101,6 +101,19 @@ export class AuthController implements IAuthController {
       const responseFormatted: IAuthResponse = new authResponseDTO(
         loginResponse
       ).build();
+
+      const user: IUser | null = await this._userService.getByEmail(
+        loginDto.email
+      );
+      if (!user) {
+        return next(await parseError('User not found', 404));
+      }
+      await this._userService.update({
+        active: true,
+        pushToken: null,
+        userUuid: user.userUuid,
+      });
+
       res.status(200).json({
         success: true,
         data: responseFormatted,
@@ -116,7 +129,13 @@ export class AuthController implements IAuthController {
     next: NextFunction
   ): Promise<void> {
     try {
-      // TODO Agregar logica de cambio de estado o log out de aplicacion
+      const { userUuid } = req.user;
+      await this._userService.update({
+        active: false,
+        pushToken: null,
+        userUuid,
+      });
+
       res.status(200).json({
         success: true,
         message: 'User signed out',
@@ -215,6 +234,34 @@ export class AuthController implements IAuthController {
       res.status(200).json({
         success: true,
         data: response,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async registerPushToken(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token } = req.body;
+      const { userUuid } = req.user;
+      if (!token) {
+        return next(
+          await parseError('Token not found in your application', 500)
+        );
+      }
+
+      await this._userService.update({
+        pushToken: token,
+        userUuid,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "'User Token successfully register'",
       });
     } catch (err) {
       next(err);

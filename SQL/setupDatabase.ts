@@ -31,7 +31,6 @@ const knexInstance = new KnexConnection().knex;
         table.integer('gamification_level').defaultTo(1);
         table.boolean('active').defaultTo(true);
         table.string('auth0_id');
-        table.string('push_token_type').defaultTo(null);
         table.string('push_token').defaultTo(null);
         table.timestamp('created_at').defaultTo(knexInstance.fn.now());
         table.timestamp('updated_at').defaultTo(knexInstance.fn.now());

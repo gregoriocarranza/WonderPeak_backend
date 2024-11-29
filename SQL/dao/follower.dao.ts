@@ -186,6 +186,7 @@ export class FollowerDAO implements IFollower {
       gamificationLevel: data.user.gamification_level,
       auth0Id: data.user.auth0_id,
       active: data.user.active,
+      pushToken: data.user.push_token,
     };
   }
 
