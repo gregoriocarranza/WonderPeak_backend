@@ -33,5 +33,11 @@ export class AuthRouter {
       '/reset_password',
       this._authController.resetPassword.bind(this._authController)
     );
+    this.router.post(
+      '/push-token',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._authController.registerPushToken.bind(this._authController)
+    );
   }
 }

@@ -14,6 +14,7 @@ export interface IUser {
   gamificationLevel: number;
   active: boolean;
   auth0Id: string;
+  pushToken: string;
 }
 
 export interface IRegisterUser {

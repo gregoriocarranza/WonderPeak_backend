@@ -159,6 +159,7 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
       gamification_level: user?.gamificationLevel,
       active: user.active,
       auth0_id: user?.auth0Id,
+      push_token: user?.pushToken,
     };
   }
 
@@ -177,6 +178,7 @@ export class UserDAO implements IUserDAO<UserInputDTO, IUser> {
       gamificationLevel: data.user.gamification_level,
       auth0Id: data.user.auth0_id,
       active: data.user.active,
+      pushToken: data.user.push_token,
     };
   }
 

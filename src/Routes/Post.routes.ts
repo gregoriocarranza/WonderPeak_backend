@@ -25,6 +25,12 @@ export class PostRouter {
       this._postController.getAll.bind(this._postController)
     );
     this.router.get(
+      '/favorites',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._postController.getFavorites.bind(this._postController)
+    );
+    this.router.get(
       '/:postUuid',
       decodeJwtMiddleware,
       userMandatory,
