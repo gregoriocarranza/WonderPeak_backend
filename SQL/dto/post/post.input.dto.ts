@@ -8,6 +8,7 @@ export class PostInputDTO {
   longitude: number | null;
   mapsUrl: string | null;
   multimediaUrl: string | null;
+  likesCount: number | null;
 
   constructor(data: any) {
     this.userUuid = data.userUuid;
@@ -19,6 +20,7 @@ export class PostInputDTO {
     this.longitude = data.longitude;
     this.mapsUrl = data.mapsUrl || null;
     this.multimediaUrl = data.multimediaUrl;
+    this.likesCount = data.likesCount || 0;
   }
 
   public build(): PostInputDTO {

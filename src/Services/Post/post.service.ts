@@ -8,6 +8,7 @@ import { InteractionsInputDTO } from '../../../SQL/dto/interactions/interaction.
 import { IInteractions } from '../../../SQL/Interface/IInteractions';
 import { FavoritesDAO } from '../../../SQL/dao/favorites.dao';
 import { Readable } from 'stream';
+import { parseError } from '../../utils/parseError';
 export class PostService {
   private _postDAO: PostDAO = new PostDAO();
   private _likeDAO: LikesDAO = new LikesDAO();
@@ -113,6 +114,20 @@ export class PostService {
   ): Promise<IInteractions | null> {
     return await this._favoriteDAO.getFavorites(userUuid, postUuid);
   }
+
+  public async isFavorite(
+    userUuid: string,
+    postUuid: string
+  ): Promise<boolean> {
+    const result: any = (await this._favoriteDAO.getFavorites(
+      userUuid,
+      postUuid
+    ))
+      ? true
+      : false;
+    return result;
+  }
+
   public async getFavoritePosts(
     userUuid: string,
     offset: number,
@@ -139,11 +154,23 @@ export class PostService {
   ): Promise<IInteractions | null> {
     return await this._likeDAO.getLike(userUuid, postUuid);
   }
+  public async isLiked(userUuid: string, postUuid: string): Promise<boolean> {
+    const result: any = (await this._likeDAO.getLike(userUuid, postUuid))
+      ? true
+      : false;
+    return result;
+  }
 
   public async like(
     likeInputDto: InteractionsInputDTO
   ): Promise<IInteractions | null> {
-    return await this._likeDAO.create(likeInputDto);
+    const result = await this._likeDAO.create(likeInputDto);
+    const post: IPost | null = await this.getByUuid(likeInputDto.postUuid);
+    if (!post) {
+      throw await parseError('Post not found', 404);
+    }
+    await this.update({ ...post, likesCount: post.likesCount + 1 });
+    return result;
   }
   public async removeLike(userUuid: string, postUuid: string): Promise<void> {
     return await this._likeDAO.delete(userUuid, postUuid);
