@@ -141,7 +141,6 @@ export class FavoritesDAO
       .knex<IInteractions>('favorites')
       .where('user_uuid', userUuid)
       .count('post_uuid as total');
-    console.log(data);
 
     const totalCount: number = count[0]?.total;
     const users: IInteractions[] = data.map((d: any) =>

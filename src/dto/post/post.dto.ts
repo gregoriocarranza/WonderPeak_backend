@@ -21,6 +21,8 @@ export class PostDTO {
   likesCount: number | null;
   createdAt: Date | null;
   updatedAt: Date | null;
+  liked: boolean;
+  favorite: boolean;
 
   constructor(data: any) {
     this.postUuid = data.postUuid || null;
@@ -34,11 +36,13 @@ export class PostDTO {
       mapsUrl: data.mapsUrl || null,
     };
     this.multimediaUrl = data.multimediaUrl || null;
-    this.commentsCount = data.commentCount || null;
-    this.likesCount = data.likesCount || null;
+    this.commentsCount = data.commentCount;
+    this.likesCount = data.likesCount;
     this.createdAt = data.createdAt ? new Date(data.createdAt) : null;
     this.updatedAt = data.updated_at ? new Date(data.updated_at) : null;
     this.user = null;
+    this.liked = data.isLiked || false;
+    this.favorite = data.isFavorite || false;
     if (data.name) {
       this.user = {
         name: data.name,

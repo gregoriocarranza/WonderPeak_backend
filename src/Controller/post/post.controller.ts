@@ -79,7 +79,17 @@ export class PostController implements IPostController {
       );
 
       const postsPromises: Promise<PostDTO>[] =
-        result.data?.map(async (a) => await new PostDTO(a).build()) || [];
+        result.data?.map(
+          async (a: IPost) =>
+            await new PostDTO({
+              ...a,
+              isLiked: await this._postService.isLiked(userUuid, a.postUuid),
+              isFavorite: await this._postService.isFavorite(
+                userUuid,
+                a.postUuid
+              ),
+            }).build()
+        ) || [];
       const postsDTO: PostDTO[] = await Promise.all(postsPromises);
 
       // Fetch ads
@@ -127,6 +137,7 @@ export class PostController implements IPostController {
   ): Promise<void> {
     try {
       const { userUuid } = req.params;
+      const { userUuid: jwtUserUuid } = req.user;
       const { page, limit } = paginationHelper(req);
       const newpage: number = page;
       let newLimit: number = limit;
@@ -135,7 +146,17 @@ export class PostController implements IPostController {
       const result: IDataPaginator<IPost> =
         await this._postService.getAllByUserUuid(userUuid, offset, newLimit);
       const postsPromises: Promise<PostDTO>[] =
-        result.data?.map(async (a) => await new PostDTO(a).build()) || [];
+        result.data?.map(
+          async (a) =>
+            await new PostDTO({
+              ...a,
+              isLiked: await this._postService.isLiked(jwtUserUuid, a.postUuid),
+              isFavorite: await this._postService.isFavorite(
+                jwtUserUuid,
+                a.postUuid
+              ),
+            }).build()
+        ) || [];
       const postsDTO: PostDTO[] = await Promise.all(postsPromises);
       res.json({ ...result, ...{ data: postsDTO } });
     } catch (err: any) {
@@ -156,6 +177,7 @@ export class PostController implements IPostController {
   ): Promise<void> {
     try {
       const { postUuid } = req.params;
+      const { userUuid } = req.user;
       const inputDto: UuidInputDTO = new UuidInputDTO(postUuid).build();
       const validation: IInputValidator = await inputValidator(inputDto);
       if (!validation.success) {
@@ -165,7 +187,12 @@ export class PostController implements IPostController {
       if (!post) {
         return next(await parseError('Post not found', 404));
       }
-      const postDTO: PostDTO = await new PostDTO(post).build();
+      const postDTO: PostDTO = await new PostDTO({
+        ...post,
+        isLiked: await this._postService.isLiked(userUuid, post.postUuid),
+        isFavorite: await this._postService.isFavorite(userUuid, post.postUuid),
+      }).build();
+
       res.status(200).json({
         success: true,
         data: postDTO,
@@ -198,7 +225,7 @@ export class PostController implements IPostController {
 
         if (req?.file?.size) {
           const fileSizeInMB = (req.file.size / (1024 * 1024)).toFixed(2);
-          console.log(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
+          console.info(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
         }
 
         const { userUuid } = req.user;
@@ -217,7 +244,7 @@ export class PostController implements IPostController {
           default:
             throw new Error('multimediaFileType not suported');
         }
-        console.log(
+        console.info(
           `Archivo con extension ${req.body?.multimediaFileType}. Guardandolo como ${multimediaFileType} `
         );
 
@@ -461,12 +488,18 @@ export class PostController implements IPostController {
         offset,
         newLimit
       );
-      console.log(result);
-      if (!result || !result.data || result.data.length === 0) {
-        return next(await parseError('No favorite posts found', 404));
-      }
       const postsPromises: Promise<PostDTO>[] =
-        result.data?.map(async (a: any) => await new PostDTO(a).build()) || [];
+        result.data?.map(
+          async (a: IPost) =>
+            await new PostDTO({
+              ...a,
+              isLiked: await this._postService.isLiked(userUuid, a.postUuid),
+              isFavorite: await this._postService.isFavorite(
+                userUuid,
+                a.postUuid
+              ),
+            }).build()
+        ) || [];
       const postsDTO: PostDTO[] = await Promise.all(postsPromises);
 
       res.status(200).json({

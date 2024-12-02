@@ -140,9 +140,12 @@ components:
         commentsCount:
           type: integer
           example: 5
-        likesCount:
-          type: integer
-          example: 120
+        liked:
+          type: boolean
+          example: true
+        favorite:
+          type: boolean
+          example: false
         createdAt:
           type: string
           format: date-time

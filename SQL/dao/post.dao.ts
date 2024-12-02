@@ -59,8 +59,6 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .offset(offset)
       .limit(limit);
 
-    console.log(query.toString());
-
     const data = await query;
 
     const count: any = await this._knexConnection
@@ -179,6 +177,7 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       longitude: post?.longitude,
       mapsUrl: post?.mapsUrl,
       multimedia_url: post?.multimediaUrl,
+      likes_count: post?.likesCount,
     };
   }
 
