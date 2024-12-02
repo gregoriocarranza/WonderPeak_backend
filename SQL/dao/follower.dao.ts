@@ -101,6 +101,19 @@ export class FollowerDAO implements IFollower {
     return !!data;
   }
 
+  public async isFavorite(followDTO: FollowerInputDTO): Promise<boolean> {
+    const data = await this._knexConnection
+      .knex('follower')
+      .select()
+      .where({
+        follower_uuid: followDTO.userFollowerUuid,
+        followed_uuid: followDTO.userFollowedUuid,
+        favorite: true,
+      })
+      .first();
+    return !!data;
+  }
+
   public async removeFollower(followDTO: FollowerInputDTO): Promise<void> {
     await this._knexConnection
       .knex('follower')

@@ -95,6 +95,7 @@ export class UserController implements IUserController {
   ): Promise<void> {
     try {
       const { userUuid } = req.params;
+      const { userUuid: jwtUserUuid } = req.user;
       const inputDto: UuidInputDTO = new UuidInputDTO(userUuid).build();
       const validation: IInputValidator = await inputValidator(inputDto);
       if (!validation.success) {
@@ -104,7 +105,21 @@ export class UserController implements IUserController {
       if (!user) {
         return next(await parseError('User not found', 404));
       }
-      const userDTO: UserDTO = await new UserDTO(user).build();
+
+      const imFollower = new FollowerInputDTO({
+        followerUuid: jwtUserUuid,
+        followedUuid: userUuid,
+      });
+      const isFollowing = new FollowerInputDTO({
+        followedUuid: jwtUserUuid,
+        followerUuid: userUuid,
+      });
+      const userDTO: UserDTO = await new UserDTO({
+        ...user,
+        imFollower: await this._userService.isFollowing(imFollower),
+        isFollowing: await this._userService.isFollowing(isFollowing),
+        isFavorite: await this._userService.isFavorite(imFollower),
+      }).build();
       res.status(200).json({
         success: true,
         data: userDTO,
@@ -233,12 +248,13 @@ export class UserController implements IUserController {
       newLimit = newLimit === 0 ? 20 : newLimit;
       const offset = newpage * newLimit;
       const is_follower = false;
-      const result: IDataPaginator<IUser> = await this._userService.getAllFollowers(
-        is_follower,
-        userUuid,
-        offset,
-        newLimit,
-      );
+      const result: IDataPaginator<IUser> =
+        await this._userService.getAllFollowers(
+          is_follower,
+          userUuid,
+          offset,
+          newLimit
+        );
       const usersPromises: Promise<UserDTO>[] =
         result.data?.map(async (a) => await new UserDTO(a).build()) || [];
       const usersDTO: UserDTO[] = await Promise.all(usersPromises);
@@ -267,12 +283,13 @@ export class UserController implements IUserController {
       newLimit = newLimit === 0 ? 20 : newLimit;
       const is_follower = true;
       const offset = newpage * newLimit;
-      const result: IDataPaginator<IUser> = await this._userService.getAllFollowers(
-        is_follower,
-        userUuid,
-        offset,
-        newLimit,
-      );
+      const result: IDataPaginator<IUser> =
+        await this._userService.getAllFollowers(
+          is_follower,
+          userUuid,
+          offset,
+          newLimit
+        );
       const usersPromises: Promise<UserDTO>[] =
         result.data?.map(async (a) => await new UserDTO(a).build()) || [];
       const usersDTO: UserDTO[] = await Promise.all(usersPromises);
@@ -294,7 +311,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid: followerUuid }= req.user
+      const { userUuid: followerUuid } = req.user;
       const { userUuid: followedUuid } = req.params;
 
       if (followerUuid === followedUuid) {
@@ -303,7 +320,7 @@ export class UserController implements IUserController {
 
       const followDTO = new FollowerInputDTO({
         followerUuid,
-        followedUuid
+        followedUuid,
       });
 
       const isFollowing = await this._userService.isFollowing(followDTO);
@@ -312,13 +329,13 @@ export class UserController implements IUserController {
         await this._userService.unfollowUser(followDTO);
         res.status(200).json({
           success: true,
-          message: 'Successfully unfollowed user'
+          message: 'Successfully unfollowed user',
         });
       } else {
         await this._userService.followUser(followDTO);
         res.status(200).json({
           success: true,
-          message: 'Successfully followed user'
+          message: 'Successfully followed user',
         });
       }
     } catch (error: any) {
@@ -341,7 +358,7 @@ export class UserController implements IUserController {
       }
       const followDTO = new FollowerInputDTO({
         followerUuid,
-        followedUuid: userUuid
+        followedUuid: userUuid,
       });
       await this._userService.removeFollower(followDTO);
       res.json({
@@ -364,17 +381,14 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid } = req.user;  // not using params because it's a favorite
+      const { userUuid } = req.user; // not using params because it's a favorite
       const { page, limit } = paginationHelper(req);
       const newpage: number = page;
       let newLimit: number = limit;
       newLimit = newLimit === 0 ? 20 : newLimit;
       const offset = newpage * newLimit;
-      const result: IDataPaginator<IUser> = await this._userService.getAllFavorites(
-        userUuid,
-        offset,
-        newLimit,
-      );
+      const result: IDataPaginator<IUser> =
+        await this._userService.getAllFavorites(userUuid, offset, newLimit);
       const usersPromises: Promise<UserDTO>[] =
         result.data?.map(async (a) => await new UserDTO(a).build()) || [];
       const usersDTO: UserDTO[] = await Promise.all(usersPromises);
@@ -396,7 +410,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid: followerUuid }= req.user
+      const { userUuid: followerUuid } = req.user;
       const { userUuid: followedUuid } = req.params;
 
       if (followerUuid === followedUuid) {
@@ -413,12 +427,12 @@ export class UserController implements IUserController {
       if (isFavorite) {
         res.status(200).json({
           success: true,
-          message: 'Successfully add user to favorites'
+          message: 'Successfully add user to favorites',
         });
       } else {
         res.status(200).json({
           success: true,
-          message: 'Successfully remove user from favorites'
+          message: 'Successfully remove user from favorites',
         });
       }
     } catch (error: any) {

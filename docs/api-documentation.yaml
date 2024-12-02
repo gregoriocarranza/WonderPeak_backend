@@ -902,7 +902,19 @@ paths:
                     type: string
                     example: 'User information retrieved successfully.'
                   data:
-                    $ref: '#/components/schemas/UserData'
+                    allOf:
+                      - $ref: '#/components/schemas/UserData'
+                      - type: object
+                        properties:
+                          imFollower:
+                            type: boolean
+                            description: Indicates if the user is following this user.
+                          isFollowing:
+                            type: boolean
+                            description: Indicates if this user is following the logged-in user.
+                          isFavorite:
+                            type: boolean
+                            description: Indicates if this user is marked as a favorite.
         '401':
           description: 'Unauthorized'
           content:

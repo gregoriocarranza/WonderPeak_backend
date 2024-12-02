@@ -10,6 +10,9 @@ export class UserDTO {
   gender: string | null;
   gamificationLevel: number | null;
   active: boolean;
+  imFollower: boolean;
+  isFollowing: boolean;
+  isFavorite: boolean;
 
   constructor(data: any) {
     this.userUuid = data.userUuid;
@@ -23,6 +26,9 @@ export class UserDTO {
     this.gender = data.gender;
     this.gamificationLevel = data.gamificationLevel;
     this.active = data.active;
+    this.imFollower = data.imFollower || false;
+    this.isFollowing = data.isFollowing || false;
+    this.isFavorite = data.isFavorite || false;
   }
 
   public build(): UserDTO {

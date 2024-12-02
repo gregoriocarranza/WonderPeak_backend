@@ -59,6 +59,9 @@ export class UserService {
   public async isFollowing(followDTO: FollowerInputDTO): Promise<boolean> {
     return await this._followerDAO.isFollowing(followDTO);
   }
+  public async isFavorite(followDTO: FollowerInputDTO): Promise<boolean> {
+    return await this._followerDAO.isFavorite(followDTO);
+  }
   public async getAllFollowers(is_follower: boolean, userUuid: string, offset: number, limit: number): Promise<IDataPaginator<IUser>> {
     return await this._followerDAO.getAllFollowers(is_follower, userUuid, offset, limit);
   }
