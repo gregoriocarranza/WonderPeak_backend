@@ -2,9 +2,11 @@ import { CommentDAO } from '../../../SQL/dao/comment.dao';
 import { CommentInputDTO } from '../../../SQL/dto/comment/comment.input.dto';
 import { IDataPaginator } from '../interfaces/IDataPaginator';
 import { IComment } from '../../../SQL/Interface/IComment';
+import { PostDAO } from '../../../SQL/dao/post.dao';
 
 export class CommentService {
   private _commentDAO: CommentDAO = new CommentDAO();
+  private _postDAO: PostDAO = new PostDAO();
   constructor() {}
 
   async getAllByPostUuid(
@@ -33,5 +35,23 @@ export class CommentService {
 
   set commentDAO(commentDAO: CommentDAO) {
     this._commentDAO = commentDAO;
+  }
+
+  public async incrementCommentCount(postUuid: string): Promise<void> {
+    try {
+      await this._postDAO.incrementCommentCount(postUuid);
+    } catch (error) {
+      console.error('Error incrementing comment count:', error);
+      throw new Error('Could not increment comment count');
+    }
+  }
+
+  public async decrementCommentCount(postUuid: string): Promise<void> {
+    try {
+      await this._postDAO.decrementCommentCount(postUuid);
+    } catch (error) {
+      console.error('Error decrementing comment count:', error);
+      throw new Error('Could not decrement comment count');
+    }
   }
 }

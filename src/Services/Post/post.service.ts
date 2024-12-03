@@ -172,8 +172,15 @@ export class PostService {
     await this.update({ ...post, likesCount: post.likesCount + 1 });
     return result;
   }
+  
   public async removeLike(userUuid: string, postUuid: string): Promise<void> {
-    return await this._likeDAO.delete(userUuid, postUuid);
+    const result = await this._likeDAO.delete(userUuid, postUuid);
+    const post: IPost | null = await this.getByUuid(postUuid);
+    if (!post) {
+      throw await parseError('Post not found', 404);
+    }
+    await this.update({ ...post, likesCount: post.likesCount - 1 });
+    return result;
   }
 
   set postDAO(postDAO: PostDAO) {
