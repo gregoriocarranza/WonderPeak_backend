@@ -12,10 +12,19 @@ import { paginationHelper } from '../../utils/pagination.helper';
 import { parseError } from '../../utils/parseError';
 import { IInputValidator } from '../../utils/types';
 import { NextFunction, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';  
+import { v4 as uuidv4 } from 'uuid';
+import { PushNotificationService } from '../../Services/PushNotification/pushNotification.service';
+import { PostService } from '../../Services/Post/post.service';
+import { IPost } from '../../../SQL/Interface/IPost';
+import { UserService } from '../../Services/User/user.service';
+import { IUser } from '../../../SQL/Interface/IUser';
 
 export class CommentController implements CommentController {
   private _commentService: CommentService = new CommentService();
+  private _notificationService: PushNotificationService =
+    new PushNotificationService();
+  private _postService: PostService = new PostService();
+  private _userService: UserService = new UserService();
 
   constructor() {}
 
@@ -31,11 +40,8 @@ export class CommentController implements CommentController {
       let newLimit: number = limit;
       newLimit = newLimit === 0 ? 20 : newLimit;
       const offset = newpage * newLimit;
-      const result: IDataPaginator<IComment> = await this._commentService.getAllByPostUuid(
-        postUuid,
-        offset,
-        newLimit
-      );
+      const result: IDataPaginator<IComment> =
+        await this._commentService.getAllByPostUuid(postUuid, offset, newLimit);
       const commentsPromises: Promise<CommentDTO>[] =
         result.data?.map(async (a) => await new CommentDTO(a).build()) || [];
       const commentsDTO: CommentDTO[] = await Promise.all(commentsPromises);
@@ -63,7 +69,8 @@ export class CommentController implements CommentController {
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
       }
-      const comment: IComment | null = await this._commentService.getByUuid(commentUuid);
+      const comment: IComment | null =
+        await this._commentService.getByUuid(commentUuid);
       if (!comment) {
         return next(await parseError('Comment not found', 404));
       }
@@ -83,17 +90,36 @@ export class CommentController implements CommentController {
     next: NextFunction
   ): Promise<void> {
     const { postUuid } = req.params;
+    const user: IUser = req.user;
     const commentInputDTO: CommentInputDTO = new CommentInputDTO({
       commentUuid: uuidv4(),
       postUuid: postUuid,
-      userUuid: req.user.userUuid,
+      userUuid: user.userUuid,
       ...req.body,
     }).build();
+    const post: IPost | null = await this._postService.getByUuid(postUuid);
+    if (!post) {
+      return next(await parseError('Post not finded', 404));
+    }
+    const userPostOwner: IUser | null = await this._userService.getByUuid(
+      post?.userUuid
+    );
+    if (!userPostOwner) {
+      return next(await parseError('userOwner not finded', 404));
+    }
 
-    const comment: IComment | null = await this._commentService.create(commentInputDTO);
+    const comment: IComment | null =
+      await this._commentService.create(commentInputDTO);
     await this._commentService.incrementCommentCount(postUuid);
 
     const commentDTO: CommentDTO = await new CommentDTO(comment).build();
+    const Response = await this._notificationService.sendNotification(
+      userPostOwner?.pushToken,
+      `Tienes un nuevo comentario!`,
+      `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
+    );
+    console.log(Response);
+
     res.json({
       success: true,
       data: commentDTO,
@@ -108,11 +134,13 @@ export class CommentController implements CommentController {
     try {
       const { userUuid } = req.user;
       const { commentUuid } = req.params;
-      const commentUpdateInputDTO: CommentMiscUpdateInputDTO = new CommentMiscUpdateInputDTO({
-        ...req.body,
-      }).build();
-      const validation: IInputValidator =
-        await inputValidator(commentUpdateInputDTO);
+      const commentUpdateInputDTO: CommentMiscUpdateInputDTO =
+        new CommentMiscUpdateInputDTO({
+          ...req.body,
+        }).build();
+      const validation: IInputValidator = await inputValidator(
+        commentUpdateInputDTO
+      );
       if (!validation.success) {
         return next(await parseError(validation.message, 400));
       }
@@ -127,8 +155,9 @@ export class CommentController implements CommentController {
         );
       }
       Object.assign(commentUpdateInputDTO, { commentUuid });
-      const comment: IComment | null =
-        await this._commentService.update(commentUpdateInputDTO);
+      const comment: IComment | null = await this._commentService.update(
+        commentUpdateInputDTO
+      );
       const commentDTO: CommentDTO = await new CommentDTO(comment).build();
       res.json({
         success: true,
