@@ -794,7 +794,7 @@ paths:
                 profileCoverImage:
                   type: string
                   format: binary
-                  description: 'Profile image file'
+                  description: 'Cover image file'
       responses:
         '200':
           description: 'User data updated successfully.'
