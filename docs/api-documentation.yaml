@@ -763,19 +763,12 @@ paths:
         - 'User'
       summary: 'Update user data'
       description: 'Allows a logged in user to update personal data'
-      parameters:
-        - name: userUuid
-          in: path
-          required: true
-          schema:
-            type: string
-          example: '66a3e747-2065-49ed-bb62-50ac084742bf'
       security:
         - bearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -796,13 +789,15 @@ paths:
                   example: 'male'
                 profileUserImage:
                   type: string
-                  example: 'https://example.com/profile.jpg'
+                  format: binary
+                  description: 'Profile image file'
                 profileCoverImage:
                   type: string
-                  example: 'https://example.com/profileCover.jpg'
+                  format: binary
+                  description: 'Profile image file'
       responses:
         '200':
-          description: 'User data updated succesfully.'
+          description: 'User data updated successfully.'
           content:
             application/json:
               schema:
@@ -813,7 +808,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 'User data updated succesfully.'
+                    example: 'User data updated successfully.'
                   data:
                     $ref: '#/components/schemas/UserData'
         '400':
@@ -924,7 +919,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
-  
+
   /users/{userUuid}:
     get:
       tags:
