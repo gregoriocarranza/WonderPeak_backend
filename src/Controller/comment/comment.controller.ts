@@ -91,6 +91,8 @@ export class CommentController implements CommentController {
     }).build();
 
     const comment: IComment | null = await this._commentService.create(commentInputDTO);
+    await this._commentService.incrementCommentCount(postUuid);
+
     const commentDTO: CommentDTO = await new CommentDTO(comment).build();
     res.json({
       success: true,
@@ -167,6 +169,7 @@ export class CommentController implements CommentController {
         );
       }
       await this._commentService.delete(inputDto.uuid);
+      await this._commentService.decrementCommentCount(commentData.postUuid);
       res.json({
         success: true,
       });

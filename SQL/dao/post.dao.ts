@@ -166,6 +166,20 @@ export class PostDAO implements IPostDAO<PostInputDTO, IPost> {
       .del();
   }
 
+  public async incrementCommentCount(postUuid: string): Promise<void> {
+    await this._knexConnection
+      .knex<IPost>('posts')
+      .where('post_uuid', postUuid)
+      .increment('comment_count', 1);
+  }
+
+  public async decrementCommentCount(postUuid: string): Promise<void> {
+    await this._knexConnection
+      .knex<IPost>('posts')
+      .where('post_uuid', postUuid)
+      .decrement('comment_count', 1);
+  }
+
   private fromIPost(post: PostInputDTO): any {
     return {
       user_uuid: post?.userUuid,
