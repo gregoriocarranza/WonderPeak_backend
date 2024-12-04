@@ -15,9 +15,13 @@ import { IInputValidator, IRequestExtended } from '../../utils/types';
 import { IUserController } from './user.controller.interface';
 import { NextFunction, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import * as _ from 'lodash';
+
+import { AuthService } from '../../Services/auth/auth.service';
 
 export class UserController implements IUserController {
   private _userService: UserService = new UserService();
+  private readonly _authService: AuthService = new AuthService();
 
   constructor() {}
 
@@ -165,6 +169,52 @@ export class UserController implements IUserController {
       } else {
         console.error(err.message, err.stack);
         next(new Error('Error updating an User'));
+      }
+    }
+  }
+
+  public async updatePassword(
+    req: IRequestExtendedUser | any,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { userUuid } = req.user;
+      const { password, newPassword } = req.body;
+
+      const user: IUser | null = await this._userService.getByUuid(userUuid);
+      if (_.isNil(user)) {
+        const error: any = new Error('User is not valid for a password change');
+        error.statusCode = 400;
+        return next(error);
+      }
+
+      const loginResponse: any = await this._authService.login({
+        email: user.email,
+        password: password,
+      });
+      if (!loginResponse.access_token){
+        const error: any = new Error('Password is not valid');
+        error.statusCode = 400;
+        return next(error);
+      }
+      await this._authService.changeUserPassword(user.auth0Id, newPassword);
+      await this._userService.update({
+        active: false,
+        pushToken: null,
+        userUuid,
+      });
+      res.json({
+        success: true,
+        data: "User signed out",
+      });
+    } catch (err: any) {
+      if (err instanceof SqlValidatorError) {
+        req.statusCode = err.statusCode;
+        next(err);
+      } else {
+        console.error(err.message, err.stack);
+        next(new Error('Password is not valid'));
       }
     }
   }
