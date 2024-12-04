@@ -871,7 +871,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError-500'
-
+  /users/me/password:
+    put:
+      tags:
+        - 'User'
+      summary: 'Update user password'
+      description: 'Allows a logged in user to update password'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: 'securePassword123'
+                newPassword:
+                  type: string
+                  example: 'newSecurePassword123'
+      responses:
+        '200':
+          description: 'User data updated succesfully.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'User signed out.'
+        '400':
+          description: 'Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError-400'
+        '401':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError-401'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError-500'
+  
   /users/{userUuid}:
     get:
       tags:
