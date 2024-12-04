@@ -42,6 +42,12 @@ export class UserRouter {
       userMandatory,
       this._userController.updateMisc.bind(this._userController)
     );
+    this.router.put(
+      '/me/password',
+      decodeJwtMiddleware,
+      userMandatory,
+      this._userController.updatePassword.bind(this._userController)
+    );
 
     // Followers
     this.router.get(
