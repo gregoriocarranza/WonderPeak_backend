@@ -57,12 +57,10 @@ export class AuthController implements IAuthController {
         email: registerDTO.email,
         password: registerDTO.password,
       });
-      Object.assign(registerDTO, {
-        auth0Id: auth0Signup.result.user_id,
-      });
       const userData: UserInputDTO = new UserInputDTO({
         userUuid: uuidv4(),
-        ...registerDTO,
+        ...req.body,
+        auth0Id: auth0Signup.result.user_id,
       }).build();
       const createdUser: IUser | null =
         await this._userService.create(userData);
