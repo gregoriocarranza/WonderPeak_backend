@@ -36,5 +36,6 @@ jobs:
       - name: Clean up SSH key
         if: always()
         run: |
+          eval "$(ssh-agent -s)"
           ssh-add -D
           rm -f private_key
