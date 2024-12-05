@@ -89,41 +89,46 @@ export class CommentController implements CommentController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { postUuid } = req.params;
-    const user: IUser = req.user;
-    const commentInputDTO: CommentInputDTO = new CommentInputDTO({
-      commentUuid: uuidv4(),
-      postUuid: postUuid,
-      userUuid: user.userUuid,
-      ...req.body,
-    }).build();
-    const post: IPost | null = await this._postService.getByUuid(postUuid);
-    if (!post) {
-      return next(await parseError('Post not finded', 404));
+    try {
+      const { postUuid } = req.params;
+      const user: IUser = req.user;
+      const commentInputDTO: CommentInputDTO = new CommentInputDTO({
+        commentUuid: uuidv4(),
+        postUuid: postUuid,
+        userUuid: user.userUuid,
+        ...req.body,
+      }).build();
+      const post: IPost | null = await this._postService.getByUuid(postUuid);
+      if (!post) {
+        return next(await parseError('Post not finded', 404));
+      }
+      const userPostOwner: IUser | null = await this._userService.getByUuid(
+        post?.userUuid
+      );
+      if (!userPostOwner) {
+        return next(await parseError('userOwner not finded', 404));
+      }
+
+      const comment: IComment | null =
+        await this._commentService.create(commentInputDTO);
+      await this._commentService.incrementCommentCount(postUuid);
+
+      const commentDTO: CommentDTO = await new CommentDTO(comment).build();
+      const Response = await this._notificationService.sendNotification(
+        userPostOwner?.pushToken,
+        `Tienes un nuevo comentario!`,
+        `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
+      );
+      console.log(Response);
+
+      res.json({
+        success: true,
+        data: commentDTO,
+      });
+    } catch (err: any) {
+      console.error(err.message);
+      next(new Error('Error creating the Comment'));
     }
-    const userPostOwner: IUser | null = await this._userService.getByUuid(
-      post?.userUuid
-    );
-    if (!userPostOwner) {
-      return next(await parseError('userOwner not finded', 404));
-    }
-
-    const comment: IComment | null =
-      await this._commentService.create(commentInputDTO);
-    await this._commentService.incrementCommentCount(postUuid);
-
-    const commentDTO: CommentDTO = await new CommentDTO(comment).build();
-    const Response = await this._notificationService.sendNotification(
-      userPostOwner?.pushToken,
-      `Tienes un nuevo comentario!`,
-      `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
-    );
-    console.log(Response);
-
-    res.json({
-      success: true,
-      data: commentDTO,
-    });
   }
 
   public async updateMiscs(
