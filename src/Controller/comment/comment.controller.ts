@@ -18,6 +18,7 @@ import { PostService } from '../../Services/Post/post.service';
 import { IPost } from '../../../SQL/Interface/IPost';
 import { UserService } from '../../Services/User/user.service';
 import { IUser } from '../../../SQL/Interface/IUser';
+import { levels } from '../../utils/gamificationLevels';
 
 export class CommentController implements CommentController {
   private _commentService: CommentService = new CommentService();
@@ -89,41 +90,71 @@ export class CommentController implements CommentController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { postUuid } = req.params;
-    const user: IUser = req.user;
-    const commentInputDTO: CommentInputDTO = new CommentInputDTO({
-      commentUuid: uuidv4(),
-      postUuid: postUuid,
-      userUuid: user.userUuid,
-      ...req.body,
-    }).build();
-    const post: IPost | null = await this._postService.getByUuid(postUuid);
-    if (!post) {
-      return next(await parseError('Post not finded', 404));
+    try {
+      const { postUuid } = req.params;
+      const user: IUser = req.user;
+      const commentInputDTO: CommentInputDTO = new CommentInputDTO({
+        commentUuid: uuidv4(),
+        postUuid: postUuid,
+        userUuid: user.userUuid,
+        ...req.body,
+      }).build();
+      const post: IPost | null = await this._postService.getByUuid(postUuid);
+      if (!post) {
+        return next(await parseError('Post not finded', 404));
+      }
+      const userPostOwner: IUser | null = await this._userService.getByUuid(
+        post?.userUuid
+      );
+      if (!userPostOwner) {
+        return next(await parseError('userOwner not finded', 404));
+      }
+
+      const comment: IComment | null =
+        await this._commentService.create(commentInputDTO);
+      await this._commentService.incrementCommentCount(postUuid);
+
+      const commentDTO: CommentDTO = await new CommentDTO(comment).build();
+
+      if (userPostOwner?.pushToken) {
+        await this._notificationService.sendNotification(
+          userPostOwner?.pushToken,
+          `Tienes un nuevo comentario!`,
+          `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
+        );
+      }
+
+      if (user.gamificationLevel <= 3) {
+        const { totalCount = 0 } = await this._commentService.getAllByUserUuid(
+          user.userUuid,
+          0,
+          20
+        );
+
+        const newLevel = levels.find(
+          ({ requiredComments }) => totalCount === requiredComments
+        )?.level;
+
+        if (newLevel && user.gamificationLevel != newLevel) {
+          await this._userService.update({
+            userUuid: user.userUuid,
+            gamificationLevel: newLevel,
+          });
+        } else {
+          console.log(
+            'No new level achieved or user already at the highest level for comments'
+          );
+        }
+      }
+
+      res.json({
+        success: true,
+        data: commentDTO,
+      });
+    } catch (err: any) {
+      console.error(err.message);
+      next(new Error('Error creating the Comment'));
     }
-    const userPostOwner: IUser | null = await this._userService.getByUuid(
-      post?.userUuid
-    );
-    if (!userPostOwner) {
-      return next(await parseError('userOwner not finded', 404));
-    }
-
-    const comment: IComment | null =
-      await this._commentService.create(commentInputDTO);
-    await this._commentService.incrementCommentCount(postUuid);
-
-    const commentDTO: CommentDTO = await new CommentDTO(comment).build();
-    const Response = await this._notificationService.sendNotification(
-      userPostOwner?.pushToken,
-      `Tienes un nuevo comentario!`,
-      `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
-    );
-    console.log(Response);
-
-    res.json({
-      success: true,
-      data: commentDTO,
-    });
   }
 
   public async updateMiscs(

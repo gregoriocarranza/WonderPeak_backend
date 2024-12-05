@@ -21,6 +21,7 @@ import { IInteractions } from '../../../SQL/Interface/IInteractions';
 import { IUser } from '../../../SQL/Interface/IUser';
 import { UserService } from '../../Services/User/user.service';
 import multer from 'multer';
+import { levels } from '../../utils/gamificationLevels';
 
 const DEFAULT_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILE_SIZE = Number(process.env.MAX_FILE_SIZE) * 1024 * 1024;
@@ -228,7 +229,7 @@ export class PostController implements IPostController {
           console.info(`Tamaño del archivo subido: ${fileSizeInMB} MB`);
         }
 
-        const { userUuid } = req.user;
+        const { userUuid, gamificationLevel } = req.user;
         const locationData = JSON.parse(req.body.location);
 
         let multimediaUrl: string = '';
@@ -278,6 +279,26 @@ export class PostController implements IPostController {
 
         const post = await this._postService.create(postInputDTO);
         const postDTO = new PostDTO(post).build();
+        const { totalCount } = await this._postService.getAllByUserUuid(
+          userUuid,
+          0,
+          20
+        );
+
+        const newLevel = levels.find(
+          ({ requiredPosts }) => totalCount === requiredPosts
+        )?.level;
+
+        if (newLevel && gamificationLevel != newLevel) {
+          await this._userService.update({
+            userUuid,
+            gamificationLevel: newLevel,
+          });
+        } else {
+          console.log(
+            'No new level achieved or user already at the highest level for posts'
+          );
+        }
 
         res.json({
           success: true,
