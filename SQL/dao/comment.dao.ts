@@ -162,7 +162,6 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
       post_uuid: comment?.postUuid,
       comment_uuid: comment?.commentUuid,
       text: comment?.text,
-      created_at: comment?.createdAt,
     };
   }
 
