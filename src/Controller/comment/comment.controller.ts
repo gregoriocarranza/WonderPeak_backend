@@ -115,7 +115,7 @@ export class CommentController implements CommentController {
       await this._commentService.incrementCommentCount(postUuid);
 
       const commentDTO: CommentDTO = await new CommentDTO(comment).build();
-      
+
       if (userPostOwner?.pushToken) {
         await this._notificationService.sendNotification(
           userPostOwner?.pushToken,
@@ -123,12 +123,14 @@ export class CommentController implements CommentController {
           `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
         );
       }
-      const { totalCount = 0 } = await this._commentService.getAllByUserUuid(
-        user.userUuid,
-        0,
-        20
-      );
+
       if (user.gamificationLevel <= 3) {
+        const { totalCount = 0 } = await this._commentService.getAllByUserUuid(
+          user.userUuid,
+          0,
+          20
+        );
+
         const newLevel = levels.find(
           ({ requiredComments }) => totalCount === requiredComments
         )?.level;
@@ -140,7 +142,7 @@ export class CommentController implements CommentController {
           });
         } else {
           console.log(
-            'No new level achieved or user already at the highest level for posts'
+            'No new level achieved or user already at the highest level for comments'
           );
         }
       }
