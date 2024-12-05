@@ -18,7 +18,7 @@ jobs:
           echo "${{ secrets.DO_SSH_KEY }}" > private_key
           chmod 600 private_key
           eval "$(ssh-agent -s)"
-          echo "${{ secrets.DO_SSH_PASSPHRASE }}" | ssh-add private_key
+          ssh-add private_key
 
       - name: Debug SSH connection
         run: |
