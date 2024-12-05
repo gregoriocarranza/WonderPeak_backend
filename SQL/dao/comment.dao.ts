@@ -76,6 +76,42 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
     };
   }
 
+  public async getAllByUser(
+    userUuid: string,
+    offset: number = 0,
+    limit: number = 20
+  ): Promise<any> {
+    let query: any;
+    query = this._knexConnection
+      .knex<IComment>('comments')
+      .select()
+      .options({ nestTables: true, rowMode: 'object' })
+      .where('user_uuid	', userUuid)
+      .offset(offset)
+      .limit(limit);
+
+    const data = await query;
+    const count: any = await this._knexConnection
+      .knex<IComment>('comments')
+      .where('user_uuid	', userUuid)
+      .count('comment_uuid as total');
+    const totalCount: number = count[0]?.total;
+
+    const comments: IComment[] = data.map((d: any) => this.toIComment(d));
+    const page: number = offset === 0 ? offset : offset / limit;
+    const totalPages: number = Math.ceil(totalCount / limit);
+
+    return {
+      success: true,
+      data: comments,
+      page,
+      limit,
+      count: comments.length,
+      totalCount,
+      totalPages,
+    };
+  }
+
   public async getByUuid(commentUuid: string): Promise<IComment | null> {
     const data = await this._knexConnection
       .knex<IComment>('comments')
@@ -126,7 +162,6 @@ export class CommentDAO implements ICommentDAO<CommentInputDTO, IComment> {
       post_uuid: comment?.postUuid,
       comment_uuid: comment?.commentUuid,
       text: comment?.text,
-      created_at: comment?.createdAt,
     };
   }
 

@@ -17,6 +17,14 @@ export class CommentService {
     return await this._commentDAO.getAllByPost(postUuid, offset, limit);
   }
 
+  async getAllByUserUuid(
+    userUuid: string,
+    offset: number,
+    limit: number
+  ): Promise<IDataPaginator<IComment>> {
+    return await this._commentDAO.getAllByUser(userUuid, offset, limit);
+  }
+
   async getByUuid(uuid: string): Promise<IComment | null> {
     return await this._commentDAO.getByUuid(uuid);
   }
