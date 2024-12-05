@@ -25,7 +25,8 @@ export class PushNotificationService {
     title: string,
     body: string,
     data?: Record<string, any>
-  ): Promise<ExpoPushTicket[]> {
+  ): Promise<Record<string, ExpoPushReceipt>> {
+    // Ajusta el tipo
     if (!Expo.isExpoPushToken(expoToken)) {
       throw new Error(`Invalid Expo push token: ${expoToken}`);
     }
@@ -42,8 +43,15 @@ export class PushNotificationService {
       const ticketChunk = await this._expo.sendPushNotificationsAsync([
         message,
       ]);
+
+      const ticketIds = ticketChunk
+        .filter((ticket) => ticket.status === 'ok')
+        .map((ticket) => ticket.id);
+
       console.log('Notification sent:', ticketChunk);
-      return ticketChunk;
+
+      const receiptChunks = await this.getReceipts(ticketIds);
+      return receiptChunks;
     } catch (error) {
       console.error('Error sending notification:', error);
       throw error;
