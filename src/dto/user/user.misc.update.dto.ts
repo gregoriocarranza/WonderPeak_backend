@@ -19,7 +19,7 @@ export class UserMiscUpdateInputDTO {
 
   public build(): UserMiscUpdateInputDTO {
     for (const prop in this) {
-      if (this[prop] === undefined) {
+      if (this[prop] === undefined || this[prop] === null) {
         delete this[prop];
       }
     }

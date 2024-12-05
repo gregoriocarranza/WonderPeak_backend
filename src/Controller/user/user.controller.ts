@@ -16,11 +16,29 @@ import { IUserController } from './user.controller.interface';
 import { NextFunction, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import * as _ from 'lodash';
-
 import { AuthService } from '../../Services/auth/auth.service';
+import multer from 'multer';
+import { PostService } from '../../Services/Post/post.service';
+
+const DEFAULT_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = Number(process.env.MAX_FILE_SIZE) * 1024 * 1024;
+
+const fileSizeLimit =
+  !isNaN(MAX_FILE_SIZE) && MAX_FILE_SIZE > 0
+    ? MAX_FILE_SIZE
+    : DEFAULT_FILE_SIZE;
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: fileSizeLimit }, // Define el límite de tamaño de archivo
+}).fields([
+  { name: 'profileUserImage', maxCount: 1 },
+  { name: 'profileCoverImage', maxCount: 1 },
+]);
 
 export class UserController implements IUserController {
   private _userService: UserService = new UserService();
+  private _postService: PostService = new PostService();
   private readonly _authService: AuthService = new AuthService();
 
   constructor() {}
@@ -139,37 +157,92 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { userUuid } = req.user;
-      const userMiscUpdateInputDTO: UserMiscUpdateInputDTO =
-        new UserMiscUpdateInputDTO({
-          ...req.body,
-        }).build();
-      const validation: IInputValidator = await inputValidator(
-        userMiscUpdateInputDTO
-      );
-      if (!validation.success) {
-        return next(await parseError(validation.message, 400));
-      }
-      Object.assign(userMiscUpdateInputDTO, { userUuid });
-      const user: IUser | null = await this._userService.update(
-        userMiscUpdateInputDTO
-      );
-      if (!user) {
-        return next(await parseError('User not found', 404));
-      }
-      const userDTO: UserDTO = await new UserDTO(user).build();
-      res.json({
-        success: true,
-        data: userDTO,
+      upload(req, res, async (err) => {
+        if (err) {
+          console.error(err.message);
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              error: `El archivo es demasiado grande. Máximo permitido: ${MAX_FILE_SIZE + ' MB' || '10 MB'}.`,
+            });
+          }
+          console.error(err);
+          return next(parseError('Error al procesar el archivo', 400));
+        }
+
+        const { userUuid } = req.user;
+
+        let profileImageUrl: string | null = null;
+        let coverImageUrl: string | null = null;
+
+        if (req.files?.profileUserImage) {
+          const profileUserImageFile = req.files.profileUserImage[0];
+
+          if (profileUserImageFile.size) {
+            const fileSizeInMB = (
+              profileUserImageFile.size /
+              (1024 * 1024)
+            ).toFixed(2);
+            console.info(
+              `Tamaño del archivo profileUserImage subido: ${fileSizeInMB} MB`
+            );
+          }
+
+          profileImageUrl = await this._postService.uploadFileToCloudinary(
+            profileUserImageFile.buffer,
+            'png',
+            userUuid
+          );
+        }
+
+        if (req.files?.profileCoverImage) {
+          const profileCoverImageFile = req.files.profileCoverImage[0];
+
+          if (profileCoverImageFile.size) {
+            const fileSizeInMB = (
+              profileCoverImageFile.size /
+              (1024 * 1024)
+            ).toFixed(2);
+            console.info(
+              `Tamaño del archivo profileCoverImage subido: ${fileSizeInMB} MB`
+            );
+          }
+
+          coverImageUrl = await this._postService.uploadFileToCloudinary(
+            profileCoverImageFile.buffer,
+            'png',
+            userUuid
+          );
+        }
+
+        const userMiscUpdateInputDTO: UserMiscUpdateInputDTO =
+          new UserMiscUpdateInputDTO({
+            ...req.body,
+            profileUserImage: profileImageUrl,
+            profileCoverImage: coverImageUrl,
+          }).build();
+
+        const validation = await inputValidator(userMiscUpdateInputDTO);
+        if (!validation.success) {
+          return next(parseError(validation.message, 400));
+        }
+
+        Object.assign(userMiscUpdateInputDTO, { userUuid });
+        const user = await this._userService.update(userMiscUpdateInputDTO);
+
+        if (!user) {
+          return next(parseError('User not found', 404));
+        }
+
+        const userDTO = new UserDTO(user).build();
+
+        res.json({
+          success: true,
+          data: userDTO,
+        });
       });
     } catch (err: any) {
-      if (err instanceof SqlValidatorError) {
-        req.statusCode = err.statusCode;
-        next(err);
-      } else {
-        console.error(err.message, err.stack);
-        next(new Error('Error updating an User'));
-      }
+      console.error(err.message, err.stack);
+      next(new Error('Error updating user data'));
     }
   }
 
@@ -193,7 +266,7 @@ export class UserController implements IUserController {
         email: user.email,
         password: password,
       });
-      if (!loginResponse.access_token){
+      if (!loginResponse.access_token) {
         const error: any = new Error('Password is not valid');
         error.statusCode = 400;
         return next(error);
@@ -206,7 +279,7 @@ export class UserController implements IUserController {
       });
       res.json({
         success: true,
-        data: "User signed out",
+        data: 'User signed out',
       });
     } catch (err: any) {
       if (err instanceof SqlValidatorError) {
