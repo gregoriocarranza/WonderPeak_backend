@@ -115,12 +115,14 @@ export class CommentController implements CommentController {
       await this._commentService.incrementCommentCount(postUuid);
 
       const commentDTO: CommentDTO = await new CommentDTO(comment).build();
-      await this._notificationService.sendNotification(
-        userPostOwner?.pushToken,
-        `Tienes un nuevo comentario!`,
-        `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
-      );
-
+      
+      if (userPostOwner?.pushToken) {
+        await this._notificationService.sendNotification(
+          userPostOwner?.pushToken,
+          `Tienes un nuevo comentario!`,
+          `${'El usuario ' + user.nickname || 'Alguien'} comento tu posteo!\nPost: ${post.title}`
+        );
+      }
       const { totalCount = 0 } = await this._commentService.getAllByUserUuid(
         user.userUuid,
         0,
